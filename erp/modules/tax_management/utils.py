@@ -803,3 +803,161 @@ def helper_func_taxfilingperiod_variant_6(data: Dict[str, Any]) -> Dict[str, Any
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_taxnexusregistrys_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export TaxNexusRegistry records into a formatted CSV string."""
+    audit_log("tax_management_utils", f"Exporting TaxNexusRegistrys to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_taxnexusregistrys_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import TaxNexusRegistry records from a CSV string representation."""
+    audit_log("tax_management_utils", f"Importing TaxNexusRegistrys from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_taxnexusregistry_report(item: Dict[str, Any]) -> str:
+    """Format TaxNexusRegistry into a human-readable display string."""
+    lines = [f"=== TaxNexusRegistry Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_taxnexusregistry_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for TaxNexusRegistry."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_taxnexusregistry_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for TaxNexusRegistry."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_taxnexusregistry_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for TaxNexusRegistry."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_taxnexusregistry_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for TaxNexusRegistry."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_taxnexusregistry_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for TaxNexusRegistry."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_taxnexusregistry_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for TaxNexusRegistry."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_withholdingtaxrules_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export WithholdingTaxRule records into a formatted CSV string."""
+    audit_log("tax_management_utils", f"Exporting WithholdingTaxRules to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_withholdingtaxrules_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import WithholdingTaxRule records from a CSV string representation."""
+    audit_log("tax_management_utils", f"Importing WithholdingTaxRules from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_withholdingtaxrule_report(item: Dict[str, Any]) -> str:
+    """Format WithholdingTaxRule into a human-readable display string."""
+    lines = [f"=== WithholdingTaxRule Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_withholdingtaxrule_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for WithholdingTaxRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_withholdingtaxrule_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for WithholdingTaxRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_withholdingtaxrule_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for WithholdingTaxRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_withholdingtaxrule_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for WithholdingTaxRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_withholdingtaxrule_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for WithholdingTaxRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_withholdingtaxrule_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for WithholdingTaxRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.budgeting.models import BudgetPlan, BudgetLine, CostCenter, ProfitCenter, BudgetAllocation, BudgetAdjustment, ForecastModel, ForecastScenario, BudgetType, BudgetApprover
+from erp.modules.budgeting.models import BudgetPlan, BudgetLine, CostCenter, ProfitCenter, BudgetAllocation, BudgetAdjustment, ForecastModel, ForecastScenario, BudgetType, BudgetApprover, BudgetThresholdAlert, ZeroBasedBudgetTemplate
 
 class BudgetPlanService:
     """Service layer managing business transactions for BudgetPlan."""
@@ -1311,5 +1311,265 @@ class BudgetApproverService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_budgetapprover_4_completed", result)
+        return result
+
+class BudgetThresholdAlertService:
+    """Service layer managing business transactions for BudgetThresholdAlert."""
+    def __init__(self):
+        self.table_name = "budgeting_budgetthresholdalert"
+
+    def create_budgetthresholdalert(self, data: Dict[str, Any]) -> BudgetThresholdAlert:
+        """Create a new BudgetThresholdAlert record."""
+        audit_log("budgeting_service", f"Creating BudgetThresholdAlert")
+        obj = BudgetThresholdAlert(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"budgeting_budgetthresholdalert_created", obj.to_dict())
+        return obj
+
+    def get_budgetthresholdalert(self, record_id: str) -> Optional[BudgetThresholdAlert]:
+        """Fetch a BudgetThresholdAlert record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return BudgetThresholdAlert.from_dict(record)
+
+    def update_budgetthresholdalert(self, record_id: str, updates: Dict[str, Any]) -> BudgetThresholdAlert:
+        """Update attributes on a BudgetThresholdAlert."""
+        audit_log("budgeting_service", f"Updating BudgetThresholdAlert {record_id}")
+        obj = self.get_budgetthresholdalert(record_id)
+        if not obj:
+            raise WorkflowError(f"BudgetThresholdAlert with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"budgeting_budgetthresholdalert_updated", obj.to_dict())
+        return obj
+
+    def delete_budgetthresholdalert(self, record_id: str) -> bool:
+        """Remove a BudgetThresholdAlert record."""
+        audit_log("budgeting_service", f"Deleting BudgetThresholdAlert {record_id}")
+        obj = self.get_budgetthresholdalert(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"budgeting_budgetthresholdalert_deleted", {"id": record_id})
+        return True
+
+    def list_all_budgetthresholdalerts(self) -> List[BudgetThresholdAlert]:
+        """Retrieve all BudgetThresholdAlert items in database."""
+        records = db_instance.query(self.table_name)
+        return [BudgetThresholdAlert.from_dict(r) for r in records]
+
+    def query_budgetthresholdalerts(self, filters: Dict[str, Any]) -> List[BudgetThresholdAlert]:
+        """Find BudgetThresholdAlerts matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [BudgetThresholdAlert.from_dict(r) for r in records]
+
+    def verify_budgetthresholdalert_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_budgetthresholdalert(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for BudgetThresholdAlert: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_budgetthresholdalert(record_id)
+        if not obj:
+            raise WorkflowError(f"BudgetThresholdAlert not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for BudgetThresholdAlert {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_budgetthresholdalert_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_budgetthresholdalert(record_id)
+        if not obj:
+            raise WorkflowError(f"BudgetThresholdAlert not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for BudgetThresholdAlert {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_budgetthresholdalert_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_budgetthresholdalert(record_id)
+        if not obj:
+            raise WorkflowError(f"BudgetThresholdAlert not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for BudgetThresholdAlert {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_budgetthresholdalert_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_budgetthresholdalert(record_id)
+        if not obj:
+            raise WorkflowError(f"BudgetThresholdAlert not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for BudgetThresholdAlert {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_budgetthresholdalert_4_completed", result)
+        return result
+
+class ZeroBasedBudgetTemplateService:
+    """Service layer managing business transactions for ZeroBasedBudgetTemplate."""
+    def __init__(self):
+        self.table_name = "budgeting_zerobasedbudgettemplate"
+
+    def create_zerobasedbudgettemplate(self, data: Dict[str, Any]) -> ZeroBasedBudgetTemplate:
+        """Create a new ZeroBasedBudgetTemplate record."""
+        audit_log("budgeting_service", f"Creating ZeroBasedBudgetTemplate")
+        obj = ZeroBasedBudgetTemplate(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"budgeting_zerobasedbudgettemplate_created", obj.to_dict())
+        return obj
+
+    def get_zerobasedbudgettemplate(self, record_id: str) -> Optional[ZeroBasedBudgetTemplate]:
+        """Fetch a ZeroBasedBudgetTemplate record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return ZeroBasedBudgetTemplate.from_dict(record)
+
+    def update_zerobasedbudgettemplate(self, record_id: str, updates: Dict[str, Any]) -> ZeroBasedBudgetTemplate:
+        """Update attributes on a ZeroBasedBudgetTemplate."""
+        audit_log("budgeting_service", f"Updating ZeroBasedBudgetTemplate {record_id}")
+        obj = self.get_zerobasedbudgettemplate(record_id)
+        if not obj:
+            raise WorkflowError(f"ZeroBasedBudgetTemplate with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"budgeting_zerobasedbudgettemplate_updated", obj.to_dict())
+        return obj
+
+    def delete_zerobasedbudgettemplate(self, record_id: str) -> bool:
+        """Remove a ZeroBasedBudgetTemplate record."""
+        audit_log("budgeting_service", f"Deleting ZeroBasedBudgetTemplate {record_id}")
+        obj = self.get_zerobasedbudgettemplate(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"budgeting_zerobasedbudgettemplate_deleted", {"id": record_id})
+        return True
+
+    def list_all_zerobasedbudgettemplates(self) -> List[ZeroBasedBudgetTemplate]:
+        """Retrieve all ZeroBasedBudgetTemplate items in database."""
+        records = db_instance.query(self.table_name)
+        return [ZeroBasedBudgetTemplate.from_dict(r) for r in records]
+
+    def query_zerobasedbudgettemplates(self, filters: Dict[str, Any]) -> List[ZeroBasedBudgetTemplate]:
+        """Find ZeroBasedBudgetTemplates matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [ZeroBasedBudgetTemplate.from_dict(r) for r in records]
+
+    def verify_zerobasedbudgettemplate_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_zerobasedbudgettemplate(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for ZeroBasedBudgetTemplate: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_zerobasedbudgettemplate(record_id)
+        if not obj:
+            raise WorkflowError(f"ZeroBasedBudgetTemplate not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for ZeroBasedBudgetTemplate {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_zerobasedbudgettemplate_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_zerobasedbudgettemplate(record_id)
+        if not obj:
+            raise WorkflowError(f"ZeroBasedBudgetTemplate not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for ZeroBasedBudgetTemplate {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_zerobasedbudgettemplate_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_zerobasedbudgettemplate(record_id)
+        if not obj:
+            raise WorkflowError(f"ZeroBasedBudgetTemplate not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for ZeroBasedBudgetTemplate {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_zerobasedbudgettemplate_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_zerobasedbudgettemplate(record_id)
+        if not obj:
+            raise WorkflowError(f"ZeroBasedBudgetTemplate not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for ZeroBasedBudgetTemplate {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_zerobasedbudgettemplate_4_completed", result)
         return result
 

@@ -17,6 +17,8 @@ from erp.modules.financial_reporting.services import TrialBalanceViewService
 from erp.modules.financial_reporting.services import ReportScheduleService
 from erp.modules.financial_reporting.services import FinancialStatementNoteService
 from erp.modules.financial_reporting.services import KPIThresholdService
+from erp.modules.financial_reporting.services import ReportExportConfigService
+from erp.modules.financial_reporting.services import ConsolidatedBalanceSheetService
 
 class Financial_reportingApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Financial_reportingApiController:
         self._reportschedule_service = ReportScheduleService()
         self._financialstatementnote_service = FinancialStatementNoteService()
         self._kpithreshold_service = KPIThresholdService()
+        self._reportexportconfig_service = ReportExportConfigService()
+        self._consolidatedbalancesheet_service = ConsolidatedBalanceSheetService()
 
     def create_reporttemplate_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/financial_reporting/reporttemplates"""
@@ -690,6 +694,144 @@ class Financial_reportingApiController:
             auth_service.authorize(token, ["ledger", "financial_reporting_user"])
             is_valid = self._kpithreshold_service.verify_kpithreshold_workflow_state(record_id)
             res = self._kpithreshold_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_reportexportconfig_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/financial_reporting/reportexportconfigs"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "financial_reporting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._reportexportconfig_service.create_reportexportconfig(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_reportexportconfig_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/financial_reporting/reportexportconfigs/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "financial_reporting_user"])
+            obj = self._reportexportconfig_service.get_reportexportconfig(record_id)
+            if not obj:
+                return {"status": "error", "message": "ReportExportConfig not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_reportexportconfig_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/financial_reporting/reportexportconfigs/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "financial_reporting_manager"])
+            obj = self._reportexportconfig_service.update_reportexportconfig(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_reportexportconfig_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/financial_reporting/reportexportconfigs/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._reportexportconfig_service.delete_reportexportconfig(record_id)
+            if not success:
+                return {"status": "error", "message": "ReportExportConfig not found", "code": 404}
+            return {"status": "success", "message": "ReportExportConfig deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_reportexportconfigs_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/financial_reporting/reportexportconfigs"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "financial_reporting_user"])
+            items = self._reportexportconfig_service.list_all_reportexportconfigs()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_reportexportconfig_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/financial_reporting/reportexportconfigs/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "financial_reporting_user"])
+            is_valid = self._reportexportconfig_service.verify_reportexportconfig_workflow_state(record_id)
+            res = self._reportexportconfig_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_consolidatedbalancesheet_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/financial_reporting/consolidatedbalancesheets"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "financial_reporting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "scheduled_date" not in payload:
+                return {"status": "error", "message": "Missing required parameter: scheduled_date", "code": 400}
+            if "period_code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: period_code", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._consolidatedbalancesheet_service.create_consolidatedbalancesheet(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_consolidatedbalancesheet_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/financial_reporting/consolidatedbalancesheets/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "financial_reporting_user"])
+            obj = self._consolidatedbalancesheet_service.get_consolidatedbalancesheet(record_id)
+            if not obj:
+                return {"status": "error", "message": "ConsolidatedBalanceSheet not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_consolidatedbalancesheet_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/financial_reporting/consolidatedbalancesheets/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "financial_reporting_manager"])
+            obj = self._consolidatedbalancesheet_service.update_consolidatedbalancesheet(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_consolidatedbalancesheet_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/financial_reporting/consolidatedbalancesheets/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._consolidatedbalancesheet_service.delete_consolidatedbalancesheet(record_id)
+            if not success:
+                return {"status": "error", "message": "ConsolidatedBalanceSheet not found", "code": 404}
+            return {"status": "success", "message": "ConsolidatedBalanceSheet deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_consolidatedbalancesheets_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/financial_reporting/consolidatedbalancesheets"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "financial_reporting_user"])
+            items = self._consolidatedbalancesheet_service.list_all_consolidatedbalancesheets()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_consolidatedbalancesheet_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/financial_reporting/consolidatedbalancesheets/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "financial_reporting_user"])
+            is_valid = self._consolidatedbalancesheet_service.verify_consolidatedbalancesheet_workflow_state(record_id)
+            res = self._consolidatedbalancesheet_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

@@ -1026,3 +1026,197 @@ class BudgetApprover(BaseModel):
         audit_log("budgetapprover_model", f"Checking integrity of BudgetApprover ID: {self.id}")
         return len(self.id) > 10
 
+class BudgetThresholdAlert(BaseModel):
+    """
+    Model representing a BudgetThresholdAlert in the budgeting module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to BudgetThresholdAlert.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "BUDGETTHRESHOLDALERT-001")
+        self._description = kwargs.get("description", "Standard record of type BudgetThresholdAlert")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
+
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the BudgetThresholdAlert model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "BudgetThresholdAlert":
+        """Deserialize a BudgetThresholdAlert object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert BudgetThresholdAlert to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_budgetthresholdalert_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("budgetthresholdalert_model", f"Checking integrity of BudgetThresholdAlert ID: {self.id}")
+        return len(self.id) > 10
+
+class ZeroBasedBudgetTemplate(BaseModel):
+    """
+    Model representing a ZeroBasedBudgetTemplate in the budgeting module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to ZeroBasedBudgetTemplate.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "ZEROBASEDBUDGETTEMPLATE-001")
+        self._description = kwargs.get("description", "Standard record of type ZeroBasedBudgetTemplate")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
+
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the ZeroBasedBudgetTemplate model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ZeroBasedBudgetTemplate":
+        """Deserialize a ZeroBasedBudgetTemplate object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert ZeroBasedBudgetTemplate to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_zerobasedbudgettemplate_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("zerobasedbudgettemplate_model", f"Checking integrity of ZeroBasedBudgetTemplate ID: {self.id}")
+        return len(self.id) > 10
+

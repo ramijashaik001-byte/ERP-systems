@@ -1092,5 +1092,197 @@ class AssetLocation(BaseModel):
         audit_log("assetlocation_model", f"Checking integrity of AssetLocation ID: {self.id}")
         return len(self.id) > 10
 
+class LeasedAssetRecord(BaseModel):
+    """
+    Model representing a LeasedAssetRecord in the fixed_assets module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to LeasedAssetRecord.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "LEASEDASSETRECORD-001")
+        self._description = kwargs.get("description", "Standard record of type LeasedAssetRecord")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
 
-# Asset commit 9: Insurance policy claims structure
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the LeasedAssetRecord model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "LeasedAssetRecord":
+        """Deserialize a LeasedAssetRecord object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert LeasedAssetRecord to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_leasedassetrecord_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("leasedassetrecord_model", f"Checking integrity of LeasedAssetRecord ID: {self.id}")
+        return len(self.id) > 10
+
+class DepreciationMethodRule(BaseModel):
+    """
+    Model representing a DepreciationMethodRule in the fixed_assets module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to DepreciationMethodRule.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "DEPRECIATIONMETHODRULE-001")
+        self._description = kwargs.get("description", "Standard record of type DepreciationMethodRule")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
+
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the DepreciationMethodRule model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "DepreciationMethodRule":
+        """Deserialize a DepreciationMethodRule object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert DepreciationMethodRule to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_depreciationmethodrule_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("depreciationmethodrule_model", f"Checking integrity of DepreciationMethodRule ID: {self.id}")
+        return len(self.id) > 10
+

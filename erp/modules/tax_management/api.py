@@ -17,6 +17,8 @@ from erp.modules.tax_management.services import TaxAdjustmentService
 from erp.modules.tax_management.services import TaxReconciliationService
 from erp.modules.tax_management.services import TaxExemptionService
 from erp.modules.tax_management.services import TaxFilingPeriodService
+from erp.modules.tax_management.services import TaxNexusRegistryService
+from erp.modules.tax_management.services import WithholdingTaxRuleService
 
 class Tax_managementApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Tax_managementApiController:
         self._taxreconciliation_service = TaxReconciliationService()
         self._taxexemption_service = TaxExemptionService()
         self._taxfilingperiod_service = TaxFilingPeriodService()
+        self._taxnexusregistry_service = TaxNexusRegistryService()
+        self._withholdingtaxrule_service = WithholdingTaxRuleService()
 
     def create_taxcode_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/tax_management/taxcodes"""
@@ -722,6 +726,144 @@ class Tax_managementApiController:
             auth_service.authorize(token, ["ledger", "tax_management_user"])
             is_valid = self._taxfilingperiod_service.verify_taxfilingperiod_workflow_state(record_id)
             res = self._taxfilingperiod_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_taxnexusregistry_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/tax_management/taxnexusregistrys"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "tax_management_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._taxnexusregistry_service.create_taxnexusregistry(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_taxnexusregistry_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/tax_management/taxnexusregistrys/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "tax_management_user"])
+            obj = self._taxnexusregistry_service.get_taxnexusregistry(record_id)
+            if not obj:
+                return {"status": "error", "message": "TaxNexusRegistry not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_taxnexusregistry_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/tax_management/taxnexusregistrys/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "tax_management_manager"])
+            obj = self._taxnexusregistry_service.update_taxnexusregistry(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_taxnexusregistry_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/tax_management/taxnexusregistrys/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._taxnexusregistry_service.delete_taxnexusregistry(record_id)
+            if not success:
+                return {"status": "error", "message": "TaxNexusRegistry not found", "code": 404}
+            return {"status": "success", "message": "TaxNexusRegistry deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_taxnexusregistrys_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/tax_management/taxnexusregistrys"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "tax_management_user"])
+            items = self._taxnexusregistry_service.list_all_taxnexusregistrys()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_taxnexusregistry_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/tax_management/taxnexusregistrys/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "tax_management_user"])
+            is_valid = self._taxnexusregistry_service.verify_taxnexusregistry_workflow_state(record_id)
+            res = self._taxnexusregistry_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_withholdingtaxrule_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/tax_management/withholdingtaxrules"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "tax_management_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._withholdingtaxrule_service.create_withholdingtaxrule(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_withholdingtaxrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/tax_management/withholdingtaxrules/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "tax_management_user"])
+            obj = self._withholdingtaxrule_service.get_withholdingtaxrule(record_id)
+            if not obj:
+                return {"status": "error", "message": "WithholdingTaxRule not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_withholdingtaxrule_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/tax_management/withholdingtaxrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "tax_management_manager"])
+            obj = self._withholdingtaxrule_service.update_withholdingtaxrule(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_withholdingtaxrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/tax_management/withholdingtaxrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._withholdingtaxrule_service.delete_withholdingtaxrule(record_id)
+            if not success:
+                return {"status": "error", "message": "WithholdingTaxRule not found", "code": 404}
+            return {"status": "success", "message": "WithholdingTaxRule deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_withholdingtaxrules_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/tax_management/withholdingtaxrules"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "tax_management_user"])
+            items = self._withholdingtaxrule_service.list_all_withholdingtaxrules()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_withholdingtaxrule_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/tax_management/withholdingtaxrules/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "tax_management_user"])
+            is_valid = self._withholdingtaxrule_service.verify_withholdingtaxrule_workflow_state(record_id)
+            res = self._withholdingtaxrule_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

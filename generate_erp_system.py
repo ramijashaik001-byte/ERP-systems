@@ -9,51 +9,51 @@ def main():
     # 1. Define the 12 ERP finance and accounting modules
     modules_config = {
         "general_ledger": {
-            "entities": ["Account", "JournalEntry", "JournalLine", "TransactionType", "Currency", "AccountingPeriod", "FiscalYear", "LedgerBalance", "LedgerReconciliation", "ClosingEntry"],
+            "entities": ["Account", "JournalEntry", "JournalLine", "TransactionType", "Currency", "AccountingPeriod", "FiscalYear", "LedgerBalance", "LedgerReconciliation", "ClosingEntry", "RecurringJournal", "AccrualRule"],
             "logic_desc": "General Ledger tracking, double-entry journal postings, currency transactions, and trial balances."
         },
         "accounts_payable": {
-            "entities": ["Vendor", "PurchaseInvoice", "InvoiceLine", "VendorPayment", "PaymentTerm", "APAgingInterval", "PurchaseDebitNote", "VendorCreditBalance", "VendorCategory", "APReportPreference"],
+            "entities": ["Vendor", "PurchaseInvoice", "InvoiceLine", "VendorPayment", "PaymentTerm", "APAgingInterval", "PurchaseDebitNote", "VendorCreditBalance", "VendorCategory", "APReportPreference", "Vendor1099Tax", "APDisbursementRule"],
             "logic_desc": "Accounts Payable management, vendor processing, vendor invoices, purchase credits, and aging tracking."
         },
         "accounts_receivable": {
-            "entities": ["Customer", "SalesInvoice", "InvoiceItem", "CustomerReceipt", "CreditLimitLog", "ARAgingInterval", "SalesCreditNote", "DunningNotice", "CustomerCategory", "ARReportPreference"],
+            "entities": ["Customer", "SalesInvoice", "InvoiceItem", "CustomerReceipt", "CreditLimitLog", "ARAgingInterval", "SalesCreditNote", "DunningNotice", "CustomerCategory", "ARReportPreference", "ARCollectionRule", "LateFeePolicy"],
             "logic_desc": "Accounts Receivable management, customer payments, invoicing, dunning, and credit limit tracking."
         },
         "cash_bank": {
-            "entities": ["BankAccount", "BankStatement", "StatementLine", "BankReconciliation", "BankTransfer", "CashTransaction", "ReconciliationMatch", "PettyCashLog", "BankChargeConfig", "CashDrawer"],
+            "entities": ["BankAccount", "BankStatement", "StatementLine", "BankReconciliation", "BankTransfer", "CashTransaction", "ReconciliationMatch", "PettyCashLog", "BankChargeConfig", "CashDrawer", "DepositSlip", "BankRoutingRegistry"],
             "logic_desc": "Cash and bank management, check accounting, transfers, and statement reconciliation."
         },
         "fixed_assets": {
-            "entities": ["Asset", "AssetCategory", "AssetDepreciationSchedule", "AssetMaintenance", "AssetTransfer", "AssetDisposal", "AssetRevaluation", "InsurancePolicy", "AssetInsuranceClaim", "AssetLocation"],
+            "entities": ["Asset", "AssetCategory", "AssetDepreciationSchedule", "AssetMaintenance", "AssetTransfer", "AssetDisposal", "AssetRevaluation", "InsurancePolicy", "AssetInsuranceClaim", "AssetLocation", "LeasedAssetRecord", "DepreciationMethodRule"],
             "logic_desc": "Fixed assets tracking, capital depreciation accounting, maintenance ledger, and disposals."
         },
         "budgeting": {
-            "entities": ["BudgetPlan", "BudgetLine", "CostCenter", "ProfitCenter", "BudgetAllocation", "BudgetAdjustment", "ForecastModel", "ForecastScenario", "BudgetType", "BudgetApprover"],
+            "entities": ["BudgetPlan", "BudgetLine", "CostCenter", "ProfitCenter", "BudgetAllocation", "BudgetAdjustment", "ForecastModel", "ForecastScenario", "BudgetType", "BudgetApprover", "BudgetThresholdAlert", "ZeroBasedBudgetTemplate"],
             "logic_desc": "Corporate budgeting, cost centers, cost limits, actual vs budget tracking, and forecasts."
         },
         "cost_accounting": {
-            "entities": ["CostObject", "CostPool", "CostDriver", "AllocationRule", "CostAllocationRun", "ActivityRate", "DirectExpense", "OverheadRate", "CostDistribution", "CostRateSheet"],
+            "entities": ["CostObject", "CostPool", "CostDriver", "AllocationRule", "CostAllocationRun", "ActivityRate", "DirectExpense", "OverheadRate", "CostDistribution", "CostRateSheet", "CostAllocationMap", "ActivityCostPool"],
             "logic_desc": "Overhead allocations, activity-based cost runs, cost objects, and cost drivers."
         },
         "tax_management": {
-            "entities": ["TaxCode", "TaxRate", "TaxGroup", "TaxTransaction", "TaxAuthority", "TaxFiling", "TaxAdjustment", "TaxReconciliation", "TaxExemption", "TaxFilingPeriod"],
+            "entities": ["TaxCode", "TaxRate", "TaxGroup", "TaxTransaction", "TaxAuthority", "TaxFiling", "TaxAdjustment", "TaxReconciliation", "TaxExemption", "TaxFilingPeriod", "TaxNexusRegistry", "WithholdingTaxRule"],
             "logic_desc": "Tax calculations, multi-tax jurisdictions, VAT/GST filing logs, and tax returns."
         },
         "financial_reporting": {
-            "entities": ["ReportTemplate", "FinancialRatio", "DashboardWidget", "SavedReportQuery", "ConsolidationEntity", "ReportingSegment", "TrialBalanceView", "ReportSchedule", "FinancialStatementNote", "KPIThreshold"],
+            "entities": ["ReportTemplate", "FinancialRatio", "DashboardWidget", "SavedReportQuery", "ConsolidationEntity", "ReportingSegment", "TrialBalanceView", "ReportSchedule", "FinancialStatementNote", "KPIThreshold", "ReportExportConfig", "ConsolidatedBalanceSheet"],
             "logic_desc": "Financial statement rendering, P&L, balance sheets, ratios, and BI scheduling."
         },
         "audit_compliance": {
-            "entities": ["AuditTrailLog", "AccessControlLog", "ComplianceRule", "ComplianceCheckRun", "ReconciliationAnomaly", "ApprovalChain", "ApprovalStep", "SystemSettingChange", "AuditChecklist", "ComplianceException"],
+            "entities": ["AuditTrailLog", "AccessControlLog", "ComplianceRule", "ComplianceCheckRun", "ReconciliationAnomaly", "ApprovalChain", "ApprovalStep", "SystemSettingChange", "AuditChecklist", "ComplianceException", "ComplianceAuditSchedule", "SOXControlPoint"],
             "logic_desc": "Access logs, audit verification logs, regulatory compliance tracking, and change control."
         },
         "payroll_accounting": {
-            "entities": ["PayrollJournal", "EmployeeSalaryProfile", "PayrollTaxWithholding", "PayrollAccrual", "BenefitExpense", "ExpenseReimbursement", "TimesheetPosting", "PayrollAdjustment", "SalaryGrade", "PayrollBenefitPlan"],
+            "entities": ["PayrollJournal", "EmployeeSalaryProfile", "PayrollTaxWithholding", "PayrollAccrual", "BenefitExpense", "ExpenseReimbursement", "TimesheetPosting", "PayrollAdjustment", "SalaryGrade", "PayrollBenefitPlan", "EmployerTaxContribution", "PayrollAccrualPosting"],
             "logic_desc": "Payroll journal integration, tax withholding entries, benefits allocations, and salary profiles."
         },
         "purchase_sales_integration": {
-            "entities": ["PurchaseOrderMatch", "SalesOrderBilling", "InventoryValueLog", "FIFOQueueEntry", "LIFOQueueEntry", "StockValuationRun", "CostOfGoodsSoldAdjustment", "IntegrationLog", "IntegrationMapping", "IntegrationErrorLog"],
+            "entities": ["PurchaseOrderMatch", "SalesOrderBilling", "InventoryValueLog", "FIFOQueueEntry", "LIFOQueueEntry", "StockValuationRun", "CostOfGoodsSoldAdjustment", "IntegrationLog", "IntegrationMapping", "IntegrationErrorLog", "GLAccountMappingRule", "SubledgerReconciliationLog"],
             "logic_desc": "Integration interface between trading subledgers, inventory cost updates, and general ledger."
         }
     }

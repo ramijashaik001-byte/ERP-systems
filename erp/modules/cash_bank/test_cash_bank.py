@@ -36,6 +36,12 @@ from erp.modules.cash_bank.utils import export_bankchargeconfigs_to_csv, import_
 from erp.modules.cash_bank.models import CashDrawer
 from erp.modules.cash_bank.services import CashDrawerService
 from erp.modules.cash_bank.utils import export_cashdrawers_to_csv, import_cashdrawers_from_csv
+from erp.modules.cash_bank.models import DepositSlip
+from erp.modules.cash_bank.services import DepositSlipService
+from erp.modules.cash_bank.utils import export_depositslips_to_csv, import_depositslips_from_csv
+from erp.modules.cash_bank.models import BankRoutingRegistry
+from erp.modules.cash_bank.services import BankRoutingRegistryService
+from erp.modules.cash_bank.utils import export_bankroutingregistrys_to_csv, import_bankroutingregistrys_from_csv
 
 class TestCashbankModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the cash_bank module."""
@@ -51,6 +57,8 @@ class TestCashbankModule(unittest.TestCase):
         self._pettycashlog_service = PettyCashLogService()
         self._bankchargeconfig_service = BankChargeConfigService()
         self._cashdrawer_service = CashDrawerService()
+        self._depositslip_service = DepositSlipService()
+        self._bankroutingregistry_service = BankRoutingRegistryService()
 
     def test_model_bankaccount_creation(self):
         """Verify instantiation and attribute validation for BankAccount."""
@@ -514,5 +522,95 @@ class TestCashbankModule(unittest.TestCase):
         self.assertEqual(len(imported), 1)
         self._cashdrawer_service.delete_cashdrawer(created.id)
 
+    def test_model_depositslip_creation(self):
+        """Verify instantiation and attribute validation for DepositSlip."""
+        obj = DepositSlip(**{"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"}[f"status_state"])
 
-    # Cash commit 8: Verification of bank charges reconciliation checks
+    def test_service_depositslip_crud(self):
+        """Verify service CRUD operations for DepositSlip."""
+        created = self._depositslip_service.create_depositslip({"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._depositslip_service.get_depositslip(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._depositslip_service.update_depositslip(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._depositslip_service.list_all_depositslips()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._depositslip_service.delete_depositslip(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_depositslip(self):
+        """Verify domain custom workflow process logic on DepositSlip."""
+        created = self._depositslip_service.create_depositslip({"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"})
+        self.assertTrue(self._depositslip_service.verify_depositslip_workflow_state(created.id))
+        res = self._depositslip_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._depositslip_service.delete_depositslip(created.id)
+
+    def test_validation_bounds_depositslip(self):
+        """Test validation bounds and non-existent get behavior for DepositSlip."""
+        self.assertIsNone(self._depositslip_service.get_depositslip("invalid_id_value"))
+        created = self._depositslip_service.create_depositslip({"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._depositslip_service.delete_depositslip(created.id)
+
+    def test_csv_export_import_depositslip(self):
+        """Verify data serialization via CSV utility functions for DepositSlip."""
+        created = self._depositslip_service.create_depositslip({"code": "DEPOSITSLIP-001", "description": "Standard record of type DepositSlip", "status_state": "ACTIVE"})
+        csv_out = export_depositslips_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_depositslips_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._depositslip_service.delete_depositslip(created.id)
+
+    def test_model_bankroutingregistry_creation(self):
+        """Verify instantiation and attribute validation for BankRoutingRegistry."""
+        obj = BankRoutingRegistry(**{"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_bankroutingregistry_crud(self):
+        """Verify service CRUD operations for BankRoutingRegistry."""
+        created = self._bankroutingregistry_service.create_bankroutingregistry({"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._bankroutingregistry_service.get_bankroutingregistry(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._bankroutingregistry_service.update_bankroutingregistry(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._bankroutingregistry_service.list_all_bankroutingregistrys()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._bankroutingregistry_service.delete_bankroutingregistry(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_bankroutingregistry(self):
+        """Verify domain custom workflow process logic on BankRoutingRegistry."""
+        created = self._bankroutingregistry_service.create_bankroutingregistry({"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"})
+        self.assertTrue(self._bankroutingregistry_service.verify_bankroutingregistry_workflow_state(created.id))
+        res = self._bankroutingregistry_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._bankroutingregistry_service.delete_bankroutingregistry(created.id)
+
+    def test_validation_bounds_bankroutingregistry(self):
+        """Test validation bounds and non-existent get behavior for BankRoutingRegistry."""
+        self.assertIsNone(self._bankroutingregistry_service.get_bankroutingregistry("invalid_id_value"))
+        created = self._bankroutingregistry_service.create_bankroutingregistry({"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._bankroutingregistry_service.delete_bankroutingregistry(created.id)
+
+    def test_csv_export_import_bankroutingregistry(self):
+        """Verify data serialization via CSV utility functions for BankRoutingRegistry."""
+        created = self._bankroutingregistry_service.create_bankroutingregistry({"code": "BANKROUTINGREGISTRY-001", "description": "Standard record of type BankRoutingRegistry", "status_state": "ACTIVE"})
+        csv_out = export_bankroutingregistrys_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_bankroutingregistrys_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._bankroutingregistry_service.delete_bankroutingregistry(created.id)
+

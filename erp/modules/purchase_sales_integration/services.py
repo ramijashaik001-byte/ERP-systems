@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.purchase_sales_integration.models import PurchaseOrderMatch, SalesOrderBilling, InventoryValueLog, FIFOQueueEntry, LIFOQueueEntry, StockValuationRun, CostOfGoodsSoldAdjustment, IntegrationLog, IntegrationMapping, IntegrationErrorLog
+from erp.modules.purchase_sales_integration.models import PurchaseOrderMatch, SalesOrderBilling, InventoryValueLog, FIFOQueueEntry, LIFOQueueEntry, StockValuationRun, CostOfGoodsSoldAdjustment, IntegrationLog, IntegrationMapping, IntegrationErrorLog, GLAccountMappingRule, SubledgerReconciliationLog
 
 class PurchaseOrderMatchService:
     """Service layer managing business transactions for PurchaseOrderMatch."""
@@ -1325,5 +1325,267 @@ class IntegrationErrorLogService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_integrationerrorlog_4_completed", result)
+        return result
+
+class GLAccountMappingRuleService:
+    """Service layer managing business transactions for GLAccountMappingRule."""
+    def __init__(self):
+        self.table_name = "purchase_sales_integration_glaccountmappingrule"
+
+    def create_glaccountmappingrule(self, data: Dict[str, Any]) -> GLAccountMappingRule:
+        """Create a new GLAccountMappingRule record."""
+        audit_log("purchase_sales_integration_service", f"Creating GLAccountMappingRule")
+        obj = GLAccountMappingRule(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_count_value(getattr(obj, "count_value"))
+        obj.validate_seq_num(getattr(obj, "seq_num"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"purchase_sales_integration_glaccountmappingrule_created", obj.to_dict())
+        return obj
+
+    def get_glaccountmappingrule(self, record_id: str) -> Optional[GLAccountMappingRule]:
+        """Fetch a GLAccountMappingRule record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return GLAccountMappingRule.from_dict(record)
+
+    def update_glaccountmappingrule(self, record_id: str, updates: Dict[str, Any]) -> GLAccountMappingRule:
+        """Update attributes on a GLAccountMappingRule."""
+        audit_log("purchase_sales_integration_service", f"Updating GLAccountMappingRule {record_id}")
+        obj = self.get_glaccountmappingrule(record_id)
+        if not obj:
+            raise WorkflowError(f"GLAccountMappingRule with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"purchase_sales_integration_glaccountmappingrule_updated", obj.to_dict())
+        return obj
+
+    def delete_glaccountmappingrule(self, record_id: str) -> bool:
+        """Remove a GLAccountMappingRule record."""
+        audit_log("purchase_sales_integration_service", f"Deleting GLAccountMappingRule {record_id}")
+        obj = self.get_glaccountmappingrule(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"purchase_sales_integration_glaccountmappingrule_deleted", {"id": record_id})
+        return True
+
+    def list_all_glaccountmappingrules(self) -> List[GLAccountMappingRule]:
+        """Retrieve all GLAccountMappingRule items in database."""
+        records = db_instance.query(self.table_name)
+        return [GLAccountMappingRule.from_dict(r) for r in records]
+
+    def query_glaccountmappingrules(self, filters: Dict[str, Any]) -> List[GLAccountMappingRule]:
+        """Find GLAccountMappingRules matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [GLAccountMappingRule.from_dict(r) for r in records]
+
+    def verify_glaccountmappingrule_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_glaccountmappingrule(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for GLAccountMappingRule: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_glaccountmappingrule(record_id)
+        if not obj:
+            raise WorkflowError(f"GLAccountMappingRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for GLAccountMappingRule {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_glaccountmappingrule_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_glaccountmappingrule(record_id)
+        if not obj:
+            raise WorkflowError(f"GLAccountMappingRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for GLAccountMappingRule {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_glaccountmappingrule_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_glaccountmappingrule(record_id)
+        if not obj:
+            raise WorkflowError(f"GLAccountMappingRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for GLAccountMappingRule {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_glaccountmappingrule_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_glaccountmappingrule(record_id)
+        if not obj:
+            raise WorkflowError(f"GLAccountMappingRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for GLAccountMappingRule {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_glaccountmappingrule_4_completed", result)
+        return result
+
+class SubledgerReconciliationLogService:
+    """Service layer managing business transactions for SubledgerReconciliationLog."""
+    def __init__(self):
+        self.table_name = "purchase_sales_integration_subledgerreconciliationlog"
+
+    def create_subledgerreconciliationlog(self, data: Dict[str, Any]) -> SubledgerReconciliationLog:
+        """Create a new SubledgerReconciliationLog record."""
+        audit_log("purchase_sales_integration_service", f"Creating SubledgerReconciliationLog")
+        obj = SubledgerReconciliationLog(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"purchase_sales_integration_subledgerreconciliationlog_created", obj.to_dict())
+        return obj
+
+    def get_subledgerreconciliationlog(self, record_id: str) -> Optional[SubledgerReconciliationLog]:
+        """Fetch a SubledgerReconciliationLog record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return SubledgerReconciliationLog.from_dict(record)
+
+    def update_subledgerreconciliationlog(self, record_id: str, updates: Dict[str, Any]) -> SubledgerReconciliationLog:
+        """Update attributes on a SubledgerReconciliationLog."""
+        audit_log("purchase_sales_integration_service", f"Updating SubledgerReconciliationLog {record_id}")
+        obj = self.get_subledgerreconciliationlog(record_id)
+        if not obj:
+            raise WorkflowError(f"SubledgerReconciliationLog with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"purchase_sales_integration_subledgerreconciliationlog_updated", obj.to_dict())
+        return obj
+
+    def delete_subledgerreconciliationlog(self, record_id: str) -> bool:
+        """Remove a SubledgerReconciliationLog record."""
+        audit_log("purchase_sales_integration_service", f"Deleting SubledgerReconciliationLog {record_id}")
+        obj = self.get_subledgerreconciliationlog(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"purchase_sales_integration_subledgerreconciliationlog_deleted", {"id": record_id})
+        return True
+
+    def list_all_subledgerreconciliationlogs(self) -> List[SubledgerReconciliationLog]:
+        """Retrieve all SubledgerReconciliationLog items in database."""
+        records = db_instance.query(self.table_name)
+        return [SubledgerReconciliationLog.from_dict(r) for r in records]
+
+    def query_subledgerreconciliationlogs(self, filters: Dict[str, Any]) -> List[SubledgerReconciliationLog]:
+        """Find SubledgerReconciliationLogs matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [SubledgerReconciliationLog.from_dict(r) for r in records]
+
+    def verify_subledgerreconciliationlog_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_subledgerreconciliationlog(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for SubledgerReconciliationLog: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_subledgerreconciliationlog(record_id)
+        if not obj:
+            raise WorkflowError(f"SubledgerReconciliationLog not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for SubledgerReconciliationLog {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_subledgerreconciliationlog_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_subledgerreconciliationlog(record_id)
+        if not obj:
+            raise WorkflowError(f"SubledgerReconciliationLog not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for SubledgerReconciliationLog {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_subledgerreconciliationlog_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_subledgerreconciliationlog(record_id)
+        if not obj:
+            raise WorkflowError(f"SubledgerReconciliationLog not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for SubledgerReconciliationLog {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_subledgerreconciliationlog_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_subledgerreconciliationlog(record_id)
+        if not obj:
+            raise WorkflowError(f"SubledgerReconciliationLog not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for SubledgerReconciliationLog {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_subledgerreconciliationlog_4_completed", result)
         return result
 

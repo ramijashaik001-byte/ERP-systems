@@ -36,6 +36,12 @@ from erp.modules.budgeting.utils import export_budgettypes_to_csv, import_budget
 from erp.modules.budgeting.models import BudgetApprover
 from erp.modules.budgeting.services import BudgetApproverService
 from erp.modules.budgeting.utils import export_budgetapprovers_to_csv, import_budgetapprovers_from_csv
+from erp.modules.budgeting.models import BudgetThresholdAlert
+from erp.modules.budgeting.services import BudgetThresholdAlertService
+from erp.modules.budgeting.utils import export_budgetthresholdalerts_to_csv, import_budgetthresholdalerts_from_csv
+from erp.modules.budgeting.models import ZeroBasedBudgetTemplate
+from erp.modules.budgeting.services import ZeroBasedBudgetTemplateService
+from erp.modules.budgeting.utils import export_zerobasedbudgettemplates_to_csv, import_zerobasedbudgettemplates_from_csv
 
 class TestBudgetingModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the budgeting module."""
@@ -51,6 +57,8 @@ class TestBudgetingModule(unittest.TestCase):
         self._forecastscenario_service = ForecastScenarioService()
         self._budgettype_service = BudgetTypeService()
         self._budgetapprover_service = BudgetApproverService()
+        self._budgetthresholdalert_service = BudgetThresholdAlertService()
+        self._zerobasedbudgettemplate_service = ZeroBasedBudgetTemplateService()
 
     def test_model_budgetplan_creation(self):
         """Verify instantiation and attribute validation for BudgetPlan."""
@@ -513,4 +521,96 @@ class TestBudgetingModule(unittest.TestCase):
         imported = import_budgetapprovers_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._budgetapprover_service.delete_budgetapprover(created.id)
+
+    def test_model_budgetthresholdalert_creation(self):
+        """Verify instantiation and attribute validation for BudgetThresholdAlert."""
+        obj = BudgetThresholdAlert(**{"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_budgetthresholdalert_crud(self):
+        """Verify service CRUD operations for BudgetThresholdAlert."""
+        created = self._budgetthresholdalert_service.create_budgetthresholdalert({"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._budgetthresholdalert_service.get_budgetthresholdalert(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._budgetthresholdalert_service.update_budgetthresholdalert(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._budgetthresholdalert_service.list_all_budgetthresholdalerts()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._budgetthresholdalert_service.delete_budgetthresholdalert(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_budgetthresholdalert(self):
+        """Verify domain custom workflow process logic on BudgetThresholdAlert."""
+        created = self._budgetthresholdalert_service.create_budgetthresholdalert({"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"})
+        self.assertTrue(self._budgetthresholdalert_service.verify_budgetthresholdalert_workflow_state(created.id))
+        res = self._budgetthresholdalert_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._budgetthresholdalert_service.delete_budgetthresholdalert(created.id)
+
+    def test_validation_bounds_budgetthresholdalert(self):
+        """Test validation bounds and non-existent get behavior for BudgetThresholdAlert."""
+        self.assertIsNone(self._budgetthresholdalert_service.get_budgetthresholdalert("invalid_id_value"))
+        created = self._budgetthresholdalert_service.create_budgetthresholdalert({"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._budgetthresholdalert_service.delete_budgetthresholdalert(created.id)
+
+    def test_csv_export_import_budgetthresholdalert(self):
+        """Verify data serialization via CSV utility functions for BudgetThresholdAlert."""
+        created = self._budgetthresholdalert_service.create_budgetthresholdalert({"code": "BUDGETTHRESHOLDALERT-001", "description": "Standard record of type BudgetThresholdAlert", "status_state": "ACTIVE"})
+        csv_out = export_budgetthresholdalerts_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_budgetthresholdalerts_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._budgetthresholdalert_service.delete_budgetthresholdalert(created.id)
+
+    def test_model_zerobasedbudgettemplate_creation(self):
+        """Verify instantiation and attribute validation for ZeroBasedBudgetTemplate."""
+        obj = ZeroBasedBudgetTemplate(**{"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_zerobasedbudgettemplate_crud(self):
+        """Verify service CRUD operations for ZeroBasedBudgetTemplate."""
+        created = self._zerobasedbudgettemplate_service.create_zerobasedbudgettemplate({"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._zerobasedbudgettemplate_service.get_zerobasedbudgettemplate(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._zerobasedbudgettemplate_service.update_zerobasedbudgettemplate(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._zerobasedbudgettemplate_service.list_all_zerobasedbudgettemplates()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._zerobasedbudgettemplate_service.delete_zerobasedbudgettemplate(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_zerobasedbudgettemplate(self):
+        """Verify domain custom workflow process logic on ZeroBasedBudgetTemplate."""
+        created = self._zerobasedbudgettemplate_service.create_zerobasedbudgettemplate({"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"})
+        self.assertTrue(self._zerobasedbudgettemplate_service.verify_zerobasedbudgettemplate_workflow_state(created.id))
+        res = self._zerobasedbudgettemplate_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._zerobasedbudgettemplate_service.delete_zerobasedbudgettemplate(created.id)
+
+    def test_validation_bounds_zerobasedbudgettemplate(self):
+        """Test validation bounds and non-existent get behavior for ZeroBasedBudgetTemplate."""
+        self.assertIsNone(self._zerobasedbudgettemplate_service.get_zerobasedbudgettemplate("invalid_id_value"))
+        created = self._zerobasedbudgettemplate_service.create_zerobasedbudgettemplate({"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._zerobasedbudgettemplate_service.delete_zerobasedbudgettemplate(created.id)
+
+    def test_csv_export_import_zerobasedbudgettemplate(self):
+        """Verify data serialization via CSV utility functions for ZeroBasedBudgetTemplate."""
+        created = self._zerobasedbudgettemplate_service.create_zerobasedbudgettemplate({"code": "ZEROBASEDBUDGETTEMPLATE-001", "description": "Standard record of type ZeroBasedBudgetTemplate", "status_state": "ACTIVE"})
+        csv_out = export_zerobasedbudgettemplates_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_zerobasedbudgettemplates_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._zerobasedbudgettemplate_service.delete_zerobasedbudgettemplate(created.id)
 

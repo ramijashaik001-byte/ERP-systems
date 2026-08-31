@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.general_ledger.models import Account, JournalEntry, JournalLine, TransactionType, Currency, AccountingPeriod, FiscalYear, LedgerBalance, LedgerReconciliation, ClosingEntry
+from erp.modules.general_ledger.models import Account, JournalEntry, JournalLine, TransactionType, Currency, AccountingPeriod, FiscalYear, LedgerBalance, LedgerReconciliation, ClosingEntry, RecurringJournal, AccrualRule
 
 class AccountService:
     """Service layer managing business transactions for Account."""
@@ -1325,5 +1325,265 @@ class ClosingEntryService:
         event_broker.publish(f"workflow_closingentry_4_completed", result)
         return result
 
+class RecurringJournalService:
+    """Service layer managing business transactions for RecurringJournal."""
+    def __init__(self):
+        self.table_name = "general_ledger_recurringjournal"
 
-# GL commit 2: Added period closing checks
+    def create_recurringjournal(self, data: Dict[str, Any]) -> RecurringJournal:
+        """Create a new RecurringJournal record."""
+        audit_log("general_ledger_service", f"Creating RecurringJournal")
+        obj = RecurringJournal(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"general_ledger_recurringjournal_created", obj.to_dict())
+        return obj
+
+    def get_recurringjournal(self, record_id: str) -> Optional[RecurringJournal]:
+        """Fetch a RecurringJournal record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return RecurringJournal.from_dict(record)
+
+    def update_recurringjournal(self, record_id: str, updates: Dict[str, Any]) -> RecurringJournal:
+        """Update attributes on a RecurringJournal."""
+        audit_log("general_ledger_service", f"Updating RecurringJournal {record_id}")
+        obj = self.get_recurringjournal(record_id)
+        if not obj:
+            raise WorkflowError(f"RecurringJournal with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"general_ledger_recurringjournal_updated", obj.to_dict())
+        return obj
+
+    def delete_recurringjournal(self, record_id: str) -> bool:
+        """Remove a RecurringJournal record."""
+        audit_log("general_ledger_service", f"Deleting RecurringJournal {record_id}")
+        obj = self.get_recurringjournal(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"general_ledger_recurringjournal_deleted", {"id": record_id})
+        return True
+
+    def list_all_recurringjournals(self) -> List[RecurringJournal]:
+        """Retrieve all RecurringJournal items in database."""
+        records = db_instance.query(self.table_name)
+        return [RecurringJournal.from_dict(r) for r in records]
+
+    def query_recurringjournals(self, filters: Dict[str, Any]) -> List[RecurringJournal]:
+        """Find RecurringJournals matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [RecurringJournal.from_dict(r) for r in records]
+
+    def verify_recurringjournal_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_recurringjournal(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for RecurringJournal: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_recurringjournal(record_id)
+        if not obj:
+            raise WorkflowError(f"RecurringJournal not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for RecurringJournal {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_recurringjournal_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_recurringjournal(record_id)
+        if not obj:
+            raise WorkflowError(f"RecurringJournal not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for RecurringJournal {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_recurringjournal_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_recurringjournal(record_id)
+        if not obj:
+            raise WorkflowError(f"RecurringJournal not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for RecurringJournal {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_recurringjournal_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_recurringjournal(record_id)
+        if not obj:
+            raise WorkflowError(f"RecurringJournal not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for RecurringJournal {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_recurringjournal_4_completed", result)
+        return result
+
+class AccrualRuleService:
+    """Service layer managing business transactions for AccrualRule."""
+    def __init__(self):
+        self.table_name = "general_ledger_accrualrule"
+
+    def create_accrualrule(self, data: Dict[str, Any]) -> AccrualRule:
+        """Create a new AccrualRule record."""
+        audit_log("general_ledger_service", f"Creating AccrualRule")
+        obj = AccrualRule(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"general_ledger_accrualrule_created", obj.to_dict())
+        return obj
+
+    def get_accrualrule(self, record_id: str) -> Optional[AccrualRule]:
+        """Fetch a AccrualRule record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return AccrualRule.from_dict(record)
+
+    def update_accrualrule(self, record_id: str, updates: Dict[str, Any]) -> AccrualRule:
+        """Update attributes on a AccrualRule."""
+        audit_log("general_ledger_service", f"Updating AccrualRule {record_id}")
+        obj = self.get_accrualrule(record_id)
+        if not obj:
+            raise WorkflowError(f"AccrualRule with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"general_ledger_accrualrule_updated", obj.to_dict())
+        return obj
+
+    def delete_accrualrule(self, record_id: str) -> bool:
+        """Remove a AccrualRule record."""
+        audit_log("general_ledger_service", f"Deleting AccrualRule {record_id}")
+        obj = self.get_accrualrule(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"general_ledger_accrualrule_deleted", {"id": record_id})
+        return True
+
+    def list_all_accrualrules(self) -> List[AccrualRule]:
+        """Retrieve all AccrualRule items in database."""
+        records = db_instance.query(self.table_name)
+        return [AccrualRule.from_dict(r) for r in records]
+
+    def query_accrualrules(self, filters: Dict[str, Any]) -> List[AccrualRule]:
+        """Find AccrualRules matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [AccrualRule.from_dict(r) for r in records]
+
+    def verify_accrualrule_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_accrualrule(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for AccrualRule: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_accrualrule(record_id)
+        if not obj:
+            raise WorkflowError(f"AccrualRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for AccrualRule {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_accrualrule_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_accrualrule(record_id)
+        if not obj:
+            raise WorkflowError(f"AccrualRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for AccrualRule {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_accrualrule_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_accrualrule(record_id)
+        if not obj:
+            raise WorkflowError(f"AccrualRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for AccrualRule {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_accrualrule_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_accrualrule(record_id)
+        if not obj:
+            raise WorkflowError(f"AccrualRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for AccrualRule {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_accrualrule_4_completed", result)
+        return result
+

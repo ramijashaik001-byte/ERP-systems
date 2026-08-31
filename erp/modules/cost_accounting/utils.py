@@ -795,3 +795,161 @@ def helper_func_costratesheet_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_costallocationmaps_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export CostAllocationMap records into a formatted CSV string."""
+    audit_log("cost_accounting_utils", f"Exporting CostAllocationMaps to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_costallocationmaps_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import CostAllocationMap records from a CSV string representation."""
+    audit_log("cost_accounting_utils", f"Importing CostAllocationMaps from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_costallocationmap_report(item: Dict[str, Any]) -> str:
+    """Format CostAllocationMap into a human-readable display string."""
+    lines = [f"=== CostAllocationMap Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_costallocationmap_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for CostAllocationMap."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_costallocationmap_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for CostAllocationMap."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_costallocationmap_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for CostAllocationMap."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_costallocationmap_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for CostAllocationMap."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_costallocationmap_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for CostAllocationMap."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_costallocationmap_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for CostAllocationMap."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_activitycostpools_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export ActivityCostPool records into a formatted CSV string."""
+    audit_log("cost_accounting_utils", f"Exporting ActivityCostPools to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_activitycostpools_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import ActivityCostPool records from a CSV string representation."""
+    audit_log("cost_accounting_utils", f"Importing ActivityCostPools from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_activitycostpool_report(item: Dict[str, Any]) -> str:
+    """Format ActivityCostPool into a human-readable display string."""
+    lines = [f"=== ActivityCostPool Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_activitycostpool_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for ActivityCostPool."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_activitycostpool_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for ActivityCostPool."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_activitycostpool_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for ActivityCostPool."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_activitycostpool_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for ActivityCostPool."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_activitycostpool_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for ActivityCostPool."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_activitycostpool_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for ActivityCostPool."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

@@ -1023,5 +1023,197 @@ class CashDrawer(BaseModel):
         audit_log("cashdrawer_model", f"Checking integrity of CashDrawer ID: {self.id}")
         return len(self.id) > 10
 
+class DepositSlip(BaseModel):
+    """
+    Model representing a DepositSlip in the cash_bank module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to DepositSlip.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "DEPOSITSLIP-001")
+        self._description = kwargs.get("description", "Standard record of type DepositSlip")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
 
-# Cash commit 7: Added bank charge config schema rules
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the DepositSlip model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "DepositSlip":
+        """Deserialize a DepositSlip object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert DepositSlip to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_depositslip_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("depositslip_model", f"Checking integrity of DepositSlip ID: {self.id}")
+        return len(self.id) > 10
+
+class BankRoutingRegistry(BaseModel):
+    """
+    Model representing a BankRoutingRegistry in the cash_bank module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to BankRoutingRegistry.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "BANKROUTINGREGISTRY-001")
+        self._description = kwargs.get("description", "Standard record of type BankRoutingRegistry")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
+
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the BankRoutingRegistry model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "BankRoutingRegistry":
+        """Deserialize a BankRoutingRegistry object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert BankRoutingRegistry to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_bankroutingregistry_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("bankroutingregistry_model", f"Checking integrity of BankRoutingRegistry ID: {self.id}")
+        return len(self.id) > 10
+

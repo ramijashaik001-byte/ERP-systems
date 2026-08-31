@@ -36,6 +36,12 @@ from erp.modules.accounts_receivable.utils import export_customercategorys_to_cs
 from erp.modules.accounts_receivable.models import ARReportPreference
 from erp.modules.accounts_receivable.services import ARReportPreferenceService
 from erp.modules.accounts_receivable.utils import export_arreportpreferences_to_csv, import_arreportpreferences_from_csv
+from erp.modules.accounts_receivable.models import ARCollectionRule
+from erp.modules.accounts_receivable.services import ARCollectionRuleService
+from erp.modules.accounts_receivable.utils import export_arcollectionrules_to_csv, import_arcollectionrules_from_csv
+from erp.modules.accounts_receivable.models import LateFeePolicy
+from erp.modules.accounts_receivable.services import LateFeePolicyService
+from erp.modules.accounts_receivable.utils import export_latefeepolicys_to_csv, import_latefeepolicys_from_csv
 
 class TestAccountsreceivableModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the accounts_receivable module."""
@@ -51,6 +57,8 @@ class TestAccountsreceivableModule(unittest.TestCase):
         self._dunningnotice_service = DunningNoticeService()
         self._customercategory_service = CustomerCategoryService()
         self._arreportpreference_service = ARReportPreferenceService()
+        self._arcollectionrule_service = ARCollectionRuleService()
+        self._latefeepolicy_service = LateFeePolicyService()
 
     def test_model_customer_creation(self):
         """Verify instantiation and attribute validation for Customer."""
@@ -527,4 +535,96 @@ class TestAccountsreceivableModule(unittest.TestCase):
         imported = import_arreportpreferences_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._arreportpreference_service.delete_arreportpreference(created.id)
+
+    def test_model_arcollectionrule_creation(self):
+        """Verify instantiation and attribute validation for ARCollectionRule."""
+        obj = ARCollectionRule(**{"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_arcollectionrule_crud(self):
+        """Verify service CRUD operations for ARCollectionRule."""
+        created = self._arcollectionrule_service.create_arcollectionrule({"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._arcollectionrule_service.get_arcollectionrule(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._arcollectionrule_service.update_arcollectionrule(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._arcollectionrule_service.list_all_arcollectionrules()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._arcollectionrule_service.delete_arcollectionrule(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_arcollectionrule(self):
+        """Verify domain custom workflow process logic on ARCollectionRule."""
+        created = self._arcollectionrule_service.create_arcollectionrule({"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"})
+        self.assertTrue(self._arcollectionrule_service.verify_arcollectionrule_workflow_state(created.id))
+        res = self._arcollectionrule_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._arcollectionrule_service.delete_arcollectionrule(created.id)
+
+    def test_validation_bounds_arcollectionrule(self):
+        """Test validation bounds and non-existent get behavior for ARCollectionRule."""
+        self.assertIsNone(self._arcollectionrule_service.get_arcollectionrule("invalid_id_value"))
+        created = self._arcollectionrule_service.create_arcollectionrule({"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._arcollectionrule_service.delete_arcollectionrule(created.id)
+
+    def test_csv_export_import_arcollectionrule(self):
+        """Verify data serialization via CSV utility functions for ARCollectionRule."""
+        created = self._arcollectionrule_service.create_arcollectionrule({"code": "ARCOLLECTIONRULE-001", "description": "Standard record of type ARCollectionRule", "status_state": "ACTIVE"})
+        csv_out = export_arcollectionrules_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_arcollectionrules_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._arcollectionrule_service.delete_arcollectionrule(created.id)
+
+    def test_model_latefeepolicy_creation(self):
+        """Verify instantiation and attribute validation for LateFeePolicy."""
+        obj = LateFeePolicy(**{"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_latefeepolicy_crud(self):
+        """Verify service CRUD operations for LateFeePolicy."""
+        created = self._latefeepolicy_service.create_latefeepolicy({"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._latefeepolicy_service.get_latefeepolicy(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._latefeepolicy_service.update_latefeepolicy(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._latefeepolicy_service.list_all_latefeepolicys()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._latefeepolicy_service.delete_latefeepolicy(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_latefeepolicy(self):
+        """Verify domain custom workflow process logic on LateFeePolicy."""
+        created = self._latefeepolicy_service.create_latefeepolicy({"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"})
+        self.assertTrue(self._latefeepolicy_service.verify_latefeepolicy_workflow_state(created.id))
+        res = self._latefeepolicy_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._latefeepolicy_service.delete_latefeepolicy(created.id)
+
+    def test_validation_bounds_latefeepolicy(self):
+        """Test validation bounds and non-existent get behavior for LateFeePolicy."""
+        self.assertIsNone(self._latefeepolicy_service.get_latefeepolicy("invalid_id_value"))
+        created = self._latefeepolicy_service.create_latefeepolicy({"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._latefeepolicy_service.delete_latefeepolicy(created.id)
+
+    def test_csv_export_import_latefeepolicy(self):
+        """Verify data serialization via CSV utility functions for LateFeePolicy."""
+        created = self._latefeepolicy_service.create_latefeepolicy({"code": "LATEFEEPOLICY-001", "description": "Standard record of type LateFeePolicy", "status_state": "ACTIVE"})
+        csv_out = export_latefeepolicys_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_latefeepolicys_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._latefeepolicy_service.delete_latefeepolicy(created.id)
 

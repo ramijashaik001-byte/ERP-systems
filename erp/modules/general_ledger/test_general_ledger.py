@@ -36,6 +36,12 @@ from erp.modules.general_ledger.utils import export_ledgerreconciliations_to_csv
 from erp.modules.general_ledger.models import ClosingEntry
 from erp.modules.general_ledger.services import ClosingEntryService
 from erp.modules.general_ledger.utils import export_closingentrys_to_csv, import_closingentrys_from_csv
+from erp.modules.general_ledger.models import RecurringJournal
+from erp.modules.general_ledger.services import RecurringJournalService
+from erp.modules.general_ledger.utils import export_recurringjournals_to_csv, import_recurringjournals_from_csv
+from erp.modules.general_ledger.models import AccrualRule
+from erp.modules.general_ledger.services import AccrualRuleService
+from erp.modules.general_ledger.utils import export_accrualrules_to_csv, import_accrualrules_from_csv
 
 class TestGeneralledgerModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the general_ledger module."""
@@ -51,6 +57,8 @@ class TestGeneralledgerModule(unittest.TestCase):
         self._ledgerbalance_service = LedgerBalanceService()
         self._ledgerreconciliation_service = LedgerReconciliationService()
         self._closingentry_service = ClosingEntryService()
+        self._recurringjournal_service = RecurringJournalService()
+        self._accrualrule_service = AccrualRuleService()
 
     def test_model_account_creation(self):
         """Verify instantiation and attribute validation for Account."""
@@ -525,4 +533,98 @@ class TestGeneralledgerModule(unittest.TestCase):
         imported = import_closingentrys_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._closingentry_service.delete_closingentry(created.id)
+
+    def test_model_recurringjournal_creation(self):
+        """Verify instantiation and attribute validation for RecurringJournal."""
+        obj = RecurringJournal(**{"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_recurringjournal_crud(self):
+        """Verify service CRUD operations for RecurringJournal."""
+        created = self._recurringjournal_service.create_recurringjournal({"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._recurringjournal_service.get_recurringjournal(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._recurringjournal_service.update_recurringjournal(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._recurringjournal_service.list_all_recurringjournals()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._recurringjournal_service.delete_recurringjournal(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_recurringjournal(self):
+        """Verify domain custom workflow process logic on RecurringJournal."""
+        created = self._recurringjournal_service.create_recurringjournal({"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"})
+        self.assertTrue(self._recurringjournal_service.verify_recurringjournal_workflow_state(created.id))
+        res = self._recurringjournal_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._recurringjournal_service.delete_recurringjournal(created.id)
+
+    def test_validation_bounds_recurringjournal(self):
+        """Test validation bounds and non-existent get behavior for RecurringJournal."""
+        self.assertIsNone(self._recurringjournal_service.get_recurringjournal("invalid_id_value"))
+        created = self._recurringjournal_service.create_recurringjournal({"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._recurringjournal_service.delete_recurringjournal(created.id)
+
+    def test_csv_export_import_recurringjournal(self):
+        """Verify data serialization via CSV utility functions for RecurringJournal."""
+        created = self._recurringjournal_service.create_recurringjournal({"code": "RECURRINGJOURNAL-001", "description": "Standard record of type RecurringJournal", "status_state": "ACTIVE"})
+        csv_out = export_recurringjournals_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_recurringjournals_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._recurringjournal_service.delete_recurringjournal(created.id)
+
+    def test_model_accrualrule_creation(self):
+        """Verify instantiation and attribute validation for AccrualRule."""
+        obj = AccrualRule(**{"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_accrualrule_crud(self):
+        """Verify service CRUD operations for AccrualRule."""
+        created = self._accrualrule_service.create_accrualrule({"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._accrualrule_service.get_accrualrule(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._accrualrule_service.update_accrualrule(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._accrualrule_service.list_all_accrualrules()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._accrualrule_service.delete_accrualrule(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_accrualrule(self):
+        """Verify domain custom workflow process logic on AccrualRule."""
+        created = self._accrualrule_service.create_accrualrule({"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._accrualrule_service.verify_accrualrule_workflow_state(created.id))
+        res = self._accrualrule_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._accrualrule_service.delete_accrualrule(created.id)
+
+    def test_validation_bounds_accrualrule(self):
+        """Test validation bounds and non-existent get behavior for AccrualRule."""
+        self.assertIsNone(self._accrualrule_service.get_accrualrule("invalid_id_value"))
+        created = self._accrualrule_service.create_accrualrule({"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._accrualrule_service.delete_accrualrule(created.id)
+
+    def test_csv_export_import_accrualrule(self):
+        """Verify data serialization via CSV utility functions for AccrualRule."""
+        created = self._accrualrule_service.create_accrualrule({"code": "ACCRUALRULE-001", "description": "Standard record of type AccrualRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_accrualrules_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_accrualrules_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._accrualrule_service.delete_accrualrule(created.id)
 

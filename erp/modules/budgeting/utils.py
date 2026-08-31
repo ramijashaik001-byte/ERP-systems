@@ -765,3 +765,153 @@ def helper_func_budgetapprover_variant_6(data: Dict[str, Any]) -> Dict[str, Any]
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_budgetthresholdalerts_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export BudgetThresholdAlert records into a formatted CSV string."""
+    audit_log("budgeting_utils", f"Exporting BudgetThresholdAlerts to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_budgetthresholdalerts_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import BudgetThresholdAlert records from a CSV string representation."""
+    audit_log("budgeting_utils", f"Importing BudgetThresholdAlerts from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_budgetthresholdalert_report(item: Dict[str, Any]) -> str:
+    """Format BudgetThresholdAlert into a human-readable display string."""
+    lines = [f"=== BudgetThresholdAlert Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_budgetthresholdalert_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for BudgetThresholdAlert."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_budgetthresholdalert_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for BudgetThresholdAlert."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_budgetthresholdalert_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for BudgetThresholdAlert."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_budgetthresholdalert_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for BudgetThresholdAlert."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_budgetthresholdalert_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for BudgetThresholdAlert."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_budgetthresholdalert_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for BudgetThresholdAlert."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_zerobasedbudgettemplates_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export ZeroBasedBudgetTemplate records into a formatted CSV string."""
+    audit_log("budgeting_utils", f"Exporting ZeroBasedBudgetTemplates to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_zerobasedbudgettemplates_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import ZeroBasedBudgetTemplate records from a CSV string representation."""
+    audit_log("budgeting_utils", f"Importing ZeroBasedBudgetTemplates from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_zerobasedbudgettemplate_report(item: Dict[str, Any]) -> str:
+    """Format ZeroBasedBudgetTemplate into a human-readable display string."""
+    lines = [f"=== ZeroBasedBudgetTemplate Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_zerobasedbudgettemplate_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for ZeroBasedBudgetTemplate."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_zerobasedbudgettemplate_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for ZeroBasedBudgetTemplate."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_zerobasedbudgettemplate_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for ZeroBasedBudgetTemplate."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_zerobasedbudgettemplate_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for ZeroBasedBudgetTemplate."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_zerobasedbudgettemplate_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for ZeroBasedBudgetTemplate."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_zerobasedbudgettemplate_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for ZeroBasedBudgetTemplate."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

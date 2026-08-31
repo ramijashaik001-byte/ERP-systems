@@ -769,3 +769,155 @@ def helper_func_complianceexception_variant_6(data: Dict[str, Any]) -> Dict[str,
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_complianceauditschedules_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export ComplianceAuditSchedule records into a formatted CSV string."""
+    audit_log("audit_compliance_utils", f"Exporting ComplianceAuditSchedules to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_complianceauditschedules_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import ComplianceAuditSchedule records from a CSV string representation."""
+    audit_log("audit_compliance_utils", f"Importing ComplianceAuditSchedules from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_complianceauditschedule_report(item: Dict[str, Any]) -> str:
+    """Format ComplianceAuditSchedule into a human-readable display string."""
+    lines = [f"=== ComplianceAuditSchedule Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Scheduled Date: {item.get('scheduled_date')}")
+    lines.append(f"Period Code: {item.get('period_code')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_complianceauditschedule_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for ComplianceAuditSchedule."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_complianceauditschedule_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for ComplianceAuditSchedule."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_complianceauditschedule_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for ComplianceAuditSchedule."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_complianceauditschedule_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for ComplianceAuditSchedule."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_complianceauditschedule_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for ComplianceAuditSchedule."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_complianceauditschedule_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for ComplianceAuditSchedule."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_soxcontrolpoints_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export SOXControlPoint records into a formatted CSV string."""
+    audit_log("audit_compliance_utils", f"Exporting SOXControlPoints to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_soxcontrolpoints_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import SOXControlPoint records from a CSV string representation."""
+    audit_log("audit_compliance_utils", f"Importing SOXControlPoints from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_soxcontrolpoint_report(item: Dict[str, Any]) -> str:
+    """Format SOXControlPoint into a human-readable display string."""
+    lines = [f"=== SOXControlPoint Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_soxcontrolpoint_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for SOXControlPoint."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_soxcontrolpoint_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for SOXControlPoint."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_soxcontrolpoint_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for SOXControlPoint."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_soxcontrolpoint_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for SOXControlPoint."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_soxcontrolpoint_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for SOXControlPoint."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_soxcontrolpoint_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for SOXControlPoint."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

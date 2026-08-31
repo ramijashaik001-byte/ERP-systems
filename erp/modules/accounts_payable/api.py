@@ -17,6 +17,8 @@ from erp.modules.accounts_payable.services import PurchaseDebitNoteService
 from erp.modules.accounts_payable.services import VendorCreditBalanceService
 from erp.modules.accounts_payable.services import VendorCategoryService
 from erp.modules.accounts_payable.services import APReportPreferenceService
+from erp.modules.accounts_payable.services import Vendor1099TaxService
+from erp.modules.accounts_payable.services import APDisbursementRuleService
 
 class Accounts_payableApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Accounts_payableApiController:
         self._vendorcreditbalance_service = VendorCreditBalanceService()
         self._vendorcategory_service = VendorCategoryService()
         self._apreportpreference_service = APReportPreferenceService()
+        self._vendor1099tax_service = Vendor1099TaxService()
+        self._apdisbursementrule_service = APDisbursementRuleService()
 
     def create_vendor_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/accounts_payable/vendors"""
@@ -698,6 +702,140 @@ class Accounts_payableApiController:
             auth_service.authorize(token, ["ledger", "accounts_payable_user"])
             is_valid = self._apreportpreference_service.verify_apreportpreference_workflow_state(record_id)
             res = self._apreportpreference_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_vendor1099tax_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_payable/vendor1099taxs"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_payable_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._vendor1099tax_service.create_vendor1099tax(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_vendor1099tax_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_payable/vendor1099taxs/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_payable_user"])
+            obj = self._vendor1099tax_service.get_vendor1099tax(record_id)
+            if not obj:
+                return {"status": "error", "message": "Vendor1099Tax not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_vendor1099tax_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/accounts_payable/vendor1099taxs/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_payable_manager"])
+            obj = self._vendor1099tax_service.update_vendor1099tax(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_vendor1099tax_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/accounts_payable/vendor1099taxs/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._vendor1099tax_service.delete_vendor1099tax(record_id)
+            if not success:
+                return {"status": "error", "message": "Vendor1099Tax not found", "code": 404}
+            return {"status": "success", "message": "Vendor1099Tax deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_vendor1099taxs_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_payable/vendor1099taxs"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_payable_user"])
+            items = self._vendor1099tax_service.list_all_vendor1099taxs()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_vendor1099tax_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_payable/vendor1099taxs/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "accounts_payable_user"])
+            is_valid = self._vendor1099tax_service.verify_vendor1099tax_workflow_state(record_id)
+            res = self._vendor1099tax_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_apdisbursementrule_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_payable/apdisbursementrules"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_payable_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._apdisbursementrule_service.create_apdisbursementrule(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_apdisbursementrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_payable/apdisbursementrules/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_payable_user"])
+            obj = self._apdisbursementrule_service.get_apdisbursementrule(record_id)
+            if not obj:
+                return {"status": "error", "message": "APDisbursementRule not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_apdisbursementrule_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/accounts_payable/apdisbursementrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_payable_manager"])
+            obj = self._apdisbursementrule_service.update_apdisbursementrule(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_apdisbursementrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/accounts_payable/apdisbursementrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._apdisbursementrule_service.delete_apdisbursementrule(record_id)
+            if not success:
+                return {"status": "error", "message": "APDisbursementRule not found", "code": 404}
+            return {"status": "success", "message": "APDisbursementRule deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_apdisbursementrules_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_payable/apdisbursementrules"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_payable_user"])
+            items = self._apdisbursementrule_service.list_all_apdisbursementrules()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_apdisbursementrule_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_payable/apdisbursementrules/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "accounts_payable_user"])
+            is_valid = self._apdisbursementrule_service.verify_apdisbursementrule_workflow_state(record_id)
+            res = self._apdisbursementrule_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

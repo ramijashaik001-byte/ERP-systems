@@ -36,6 +36,12 @@ from erp.modules.purchase_sales_integration.utils import export_integrationmappi
 from erp.modules.purchase_sales_integration.models import IntegrationErrorLog
 from erp.modules.purchase_sales_integration.services import IntegrationErrorLogService
 from erp.modules.purchase_sales_integration.utils import export_integrationerrorlogs_to_csv, import_integrationerrorlogs_from_csv
+from erp.modules.purchase_sales_integration.models import GLAccountMappingRule
+from erp.modules.purchase_sales_integration.services import GLAccountMappingRuleService
+from erp.modules.purchase_sales_integration.utils import export_glaccountmappingrules_to_csv, import_glaccountmappingrules_from_csv
+from erp.modules.purchase_sales_integration.models import SubledgerReconciliationLog
+from erp.modules.purchase_sales_integration.services import SubledgerReconciliationLogService
+from erp.modules.purchase_sales_integration.utils import export_subledgerreconciliationlogs_to_csv, import_subledgerreconciliationlogs_from_csv
 
 class TestPurchasesalesintegrationModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the purchase_sales_integration module."""
@@ -51,6 +57,8 @@ class TestPurchasesalesintegrationModule(unittest.TestCase):
         self._integrationlog_service = IntegrationLogService()
         self._integrationmapping_service = IntegrationMappingService()
         self._integrationerrorlog_service = IntegrationErrorLogService()
+        self._glaccountmappingrule_service = GLAccountMappingRuleService()
+        self._subledgerreconciliationlog_service = SubledgerReconciliationLogService()
 
     def test_model_purchaseordermatch_creation(self):
         """Verify instantiation and attribute validation for PurchaseOrderMatch."""
@@ -527,4 +535,98 @@ class TestPurchasesalesintegrationModule(unittest.TestCase):
         imported = import_integrationerrorlogs_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._integrationerrorlog_service.delete_integrationerrorlog(created.id)
+
+    def test_model_glaccountmappingrule_creation(self):
+        """Verify instantiation and attribute validation for GLAccountMappingRule."""
+        obj = GLAccountMappingRule(**{"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.count_value, {"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"}[f"count_value"])
+        self.assertEqual(obj.seq_num, {"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"}[f"seq_num"])
+        self.assertEqual(obj.status_state, {"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_glaccountmappingrule_crud(self):
+        """Verify service CRUD operations for GLAccountMappingRule."""
+        created = self._glaccountmappingrule_service.create_glaccountmappingrule({"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._glaccountmappingrule_service.get_glaccountmappingrule(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._glaccountmappingrule_service.update_glaccountmappingrule(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._glaccountmappingrule_service.list_all_glaccountmappingrules()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._glaccountmappingrule_service.delete_glaccountmappingrule(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_glaccountmappingrule(self):
+        """Verify domain custom workflow process logic on GLAccountMappingRule."""
+        created = self._glaccountmappingrule_service.create_glaccountmappingrule({"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"})
+        self.assertTrue(self._glaccountmappingrule_service.verify_glaccountmappingrule_workflow_state(created.id))
+        res = self._glaccountmappingrule_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._glaccountmappingrule_service.delete_glaccountmappingrule(created.id)
+
+    def test_validation_bounds_glaccountmappingrule(self):
+        """Test validation bounds and non-existent get behavior for GLAccountMappingRule."""
+        self.assertIsNone(self._glaccountmappingrule_service.get_glaccountmappingrule("invalid_id_value"))
+        created = self._glaccountmappingrule_service.create_glaccountmappingrule({"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._glaccountmappingrule_service.delete_glaccountmappingrule(created.id)
+
+    def test_csv_export_import_glaccountmappingrule(self):
+        """Verify data serialization via CSV utility functions for GLAccountMappingRule."""
+        created = self._glaccountmappingrule_service.create_glaccountmappingrule({"code": "GLACCOUNTMAPPINGRULE-001", "description": "Standard record of type GLAccountMappingRule", "count_value": 10, "seq_num": 1, "status_state": "ACTIVE"})
+        csv_out = export_glaccountmappingrules_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_glaccountmappingrules_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._glaccountmappingrule_service.delete_glaccountmappingrule(created.id)
+
+    def test_model_subledgerreconciliationlog_creation(self):
+        """Verify instantiation and attribute validation for SubledgerReconciliationLog."""
+        obj = SubledgerReconciliationLog(**{"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_subledgerreconciliationlog_crud(self):
+        """Verify service CRUD operations for SubledgerReconciliationLog."""
+        created = self._subledgerreconciliationlog_service.create_subledgerreconciliationlog({"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._subledgerreconciliationlog_service.get_subledgerreconciliationlog(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._subledgerreconciliationlog_service.update_subledgerreconciliationlog(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._subledgerreconciliationlog_service.list_all_subledgerreconciliationlogs()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._subledgerreconciliationlog_service.delete_subledgerreconciliationlog(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_subledgerreconciliationlog(self):
+        """Verify domain custom workflow process logic on SubledgerReconciliationLog."""
+        created = self._subledgerreconciliationlog_service.create_subledgerreconciliationlog({"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"})
+        self.assertTrue(self._subledgerreconciliationlog_service.verify_subledgerreconciliationlog_workflow_state(created.id))
+        res = self._subledgerreconciliationlog_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._subledgerreconciliationlog_service.delete_subledgerreconciliationlog(created.id)
+
+    def test_validation_bounds_subledgerreconciliationlog(self):
+        """Test validation bounds and non-existent get behavior for SubledgerReconciliationLog."""
+        self.assertIsNone(self._subledgerreconciliationlog_service.get_subledgerreconciliationlog("invalid_id_value"))
+        created = self._subledgerreconciliationlog_service.create_subledgerreconciliationlog({"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._subledgerreconciliationlog_service.delete_subledgerreconciliationlog(created.id)
+
+    def test_csv_export_import_subledgerreconciliationlog(self):
+        """Verify data serialization via CSV utility functions for SubledgerReconciliationLog."""
+        created = self._subledgerreconciliationlog_service.create_subledgerreconciliationlog({"code": "SUBLEDGERRECONCILIATIONLOG-001", "description": "Standard record of type SubledgerReconciliationLog", "status_state": "ACTIVE"})
+        csv_out = export_subledgerreconciliationlogs_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_subledgerreconciliationlogs_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._subledgerreconciliationlog_service.delete_subledgerreconciliationlog(created.id)
 

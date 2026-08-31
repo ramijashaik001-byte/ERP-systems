@@ -36,6 +36,12 @@ from erp.modules.financial_reporting.utils import export_financialstatementnotes
 from erp.modules.financial_reporting.models import KPIThreshold
 from erp.modules.financial_reporting.services import KPIThresholdService
 from erp.modules.financial_reporting.utils import export_kpithresholds_to_csv, import_kpithresholds_from_csv
+from erp.modules.financial_reporting.models import ReportExportConfig
+from erp.modules.financial_reporting.services import ReportExportConfigService
+from erp.modules.financial_reporting.utils import export_reportexportconfigs_to_csv, import_reportexportconfigs_from_csv
+from erp.modules.financial_reporting.models import ConsolidatedBalanceSheet
+from erp.modules.financial_reporting.services import ConsolidatedBalanceSheetService
+from erp.modules.financial_reporting.utils import export_consolidatedbalancesheets_to_csv, import_consolidatedbalancesheets_from_csv
 
 class TestFinancialreportingModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the financial_reporting module."""
@@ -51,6 +57,8 @@ class TestFinancialreportingModule(unittest.TestCase):
         self._reportschedule_service = ReportScheduleService()
         self._financialstatementnote_service = FinancialStatementNoteService()
         self._kpithreshold_service = KPIThresholdService()
+        self._reportexportconfig_service = ReportExportConfigService()
+        self._consolidatedbalancesheet_service = ConsolidatedBalanceSheetService()
 
     def test_model_reporttemplate_creation(self):
         """Verify instantiation and attribute validation for ReportTemplate."""
@@ -517,4 +525,100 @@ class TestFinancialreportingModule(unittest.TestCase):
         imported = import_kpithresholds_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._kpithreshold_service.delete_kpithreshold(created.id)
+
+    def test_model_reportexportconfig_creation(self):
+        """Verify instantiation and attribute validation for ReportExportConfig."""
+        obj = ReportExportConfig(**{"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_reportexportconfig_crud(self):
+        """Verify service CRUD operations for ReportExportConfig."""
+        created = self._reportexportconfig_service.create_reportexportconfig({"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._reportexportconfig_service.get_reportexportconfig(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._reportexportconfig_service.update_reportexportconfig(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._reportexportconfig_service.list_all_reportexportconfigs()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._reportexportconfig_service.delete_reportexportconfig(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_reportexportconfig(self):
+        """Verify domain custom workflow process logic on ReportExportConfig."""
+        created = self._reportexportconfig_service.create_reportexportconfig({"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"})
+        self.assertTrue(self._reportexportconfig_service.verify_reportexportconfig_workflow_state(created.id))
+        res = self._reportexportconfig_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._reportexportconfig_service.delete_reportexportconfig(created.id)
+
+    def test_validation_bounds_reportexportconfig(self):
+        """Test validation bounds and non-existent get behavior for ReportExportConfig."""
+        self.assertIsNone(self._reportexportconfig_service.get_reportexportconfig("invalid_id_value"))
+        created = self._reportexportconfig_service.create_reportexportconfig({"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._reportexportconfig_service.delete_reportexportconfig(created.id)
+
+    def test_csv_export_import_reportexportconfig(self):
+        """Verify data serialization via CSV utility functions for ReportExportConfig."""
+        created = self._reportexportconfig_service.create_reportexportconfig({"code": "REPORTEXPORTCONFIG-001", "description": "Standard record of type ReportExportConfig", "status_state": "ACTIVE"})
+        csv_out = export_reportexportconfigs_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_reportexportconfigs_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._reportexportconfig_service.delete_reportexportconfig(created.id)
+
+    def test_model_consolidatedbalancesheet_creation(self):
+        """Verify instantiation and attribute validation for ConsolidatedBalanceSheet."""
+        obj = ConsolidatedBalanceSheet(**{"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.scheduled_date, {"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"scheduled_date"])
+        self.assertEqual(obj.period_code, {"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"period_code"])
+        self.assertEqual(obj.status_state, {"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_consolidatedbalancesheet_crud(self):
+        """Verify service CRUD operations for ConsolidatedBalanceSheet."""
+        created = self._consolidatedbalancesheet_service.create_consolidatedbalancesheet({"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._consolidatedbalancesheet_service.get_consolidatedbalancesheet(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._consolidatedbalancesheet_service.update_consolidatedbalancesheet(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._consolidatedbalancesheet_service.list_all_consolidatedbalancesheets()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._consolidatedbalancesheet_service.delete_consolidatedbalancesheet(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_consolidatedbalancesheet(self):
+        """Verify domain custom workflow process logic on ConsolidatedBalanceSheet."""
+        created = self._consolidatedbalancesheet_service.create_consolidatedbalancesheet({"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertTrue(self._consolidatedbalancesheet_service.verify_consolidatedbalancesheet_workflow_state(created.id))
+        res = self._consolidatedbalancesheet_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._consolidatedbalancesheet_service.delete_consolidatedbalancesheet(created.id)
+
+    def test_validation_bounds_consolidatedbalancesheet(self):
+        """Test validation bounds and non-existent get behavior for ConsolidatedBalanceSheet."""
+        self.assertIsNone(self._consolidatedbalancesheet_service.get_consolidatedbalancesheet("invalid_id_value"))
+        created = self._consolidatedbalancesheet_service.create_consolidatedbalancesheet({"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._consolidatedbalancesheet_service.delete_consolidatedbalancesheet(created.id)
+
+    def test_csv_export_import_consolidatedbalancesheet(self):
+        """Verify data serialization via CSV utility functions for ConsolidatedBalanceSheet."""
+        created = self._consolidatedbalancesheet_service.create_consolidatedbalancesheet({"code": "CONSOLIDATEDBALANCESHEET-001", "description": "Standard record of type ConsolidatedBalanceSheet", "amount": 1000.00, "base_currency": "USD", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        csv_out = export_consolidatedbalancesheets_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_consolidatedbalancesheets_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._consolidatedbalancesheet_service.delete_consolidatedbalancesheet(created.id)
 

@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.cash_bank.models import BankAccount, BankStatement, StatementLine, BankReconciliation, BankTransfer, CashTransaction, ReconciliationMatch, PettyCashLog, BankChargeConfig, CashDrawer
+from erp.modules.cash_bank.models import BankAccount, BankStatement, StatementLine, BankReconciliation, BankTransfer, CashTransaction, ReconciliationMatch, PettyCashLog, BankChargeConfig, CashDrawer, DepositSlip, BankRoutingRegistry
 
 class BankAccountService:
     """Service layer managing business transactions for BankAccount."""
@@ -1311,5 +1311,265 @@ class CashDrawerService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_cashdrawer_4_completed", result)
+        return result
+
+class DepositSlipService:
+    """Service layer managing business transactions for DepositSlip."""
+    def __init__(self):
+        self.table_name = "cash_bank_depositslip"
+
+    def create_depositslip(self, data: Dict[str, Any]) -> DepositSlip:
+        """Create a new DepositSlip record."""
+        audit_log("cash_bank_service", f"Creating DepositSlip")
+        obj = DepositSlip(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"cash_bank_depositslip_created", obj.to_dict())
+        return obj
+
+    def get_depositslip(self, record_id: str) -> Optional[DepositSlip]:
+        """Fetch a DepositSlip record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return DepositSlip.from_dict(record)
+
+    def update_depositslip(self, record_id: str, updates: Dict[str, Any]) -> DepositSlip:
+        """Update attributes on a DepositSlip."""
+        audit_log("cash_bank_service", f"Updating DepositSlip {record_id}")
+        obj = self.get_depositslip(record_id)
+        if not obj:
+            raise WorkflowError(f"DepositSlip with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"cash_bank_depositslip_updated", obj.to_dict())
+        return obj
+
+    def delete_depositslip(self, record_id: str) -> bool:
+        """Remove a DepositSlip record."""
+        audit_log("cash_bank_service", f"Deleting DepositSlip {record_id}")
+        obj = self.get_depositslip(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"cash_bank_depositslip_deleted", {"id": record_id})
+        return True
+
+    def list_all_depositslips(self) -> List[DepositSlip]:
+        """Retrieve all DepositSlip items in database."""
+        records = db_instance.query(self.table_name)
+        return [DepositSlip.from_dict(r) for r in records]
+
+    def query_depositslips(self, filters: Dict[str, Any]) -> List[DepositSlip]:
+        """Find DepositSlips matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [DepositSlip.from_dict(r) for r in records]
+
+    def verify_depositslip_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_depositslip(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for DepositSlip: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_depositslip(record_id)
+        if not obj:
+            raise WorkflowError(f"DepositSlip not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for DepositSlip {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_depositslip_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_depositslip(record_id)
+        if not obj:
+            raise WorkflowError(f"DepositSlip not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for DepositSlip {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_depositslip_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_depositslip(record_id)
+        if not obj:
+            raise WorkflowError(f"DepositSlip not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for DepositSlip {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_depositslip_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_depositslip(record_id)
+        if not obj:
+            raise WorkflowError(f"DepositSlip not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for DepositSlip {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_depositslip_4_completed", result)
+        return result
+
+class BankRoutingRegistryService:
+    """Service layer managing business transactions for BankRoutingRegistry."""
+    def __init__(self):
+        self.table_name = "cash_bank_bankroutingregistry"
+
+    def create_bankroutingregistry(self, data: Dict[str, Any]) -> BankRoutingRegistry:
+        """Create a new BankRoutingRegistry record."""
+        audit_log("cash_bank_service", f"Creating BankRoutingRegistry")
+        obj = BankRoutingRegistry(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"cash_bank_bankroutingregistry_created", obj.to_dict())
+        return obj
+
+    def get_bankroutingregistry(self, record_id: str) -> Optional[BankRoutingRegistry]:
+        """Fetch a BankRoutingRegistry record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return BankRoutingRegistry.from_dict(record)
+
+    def update_bankroutingregistry(self, record_id: str, updates: Dict[str, Any]) -> BankRoutingRegistry:
+        """Update attributes on a BankRoutingRegistry."""
+        audit_log("cash_bank_service", f"Updating BankRoutingRegistry {record_id}")
+        obj = self.get_bankroutingregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"BankRoutingRegistry with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"cash_bank_bankroutingregistry_updated", obj.to_dict())
+        return obj
+
+    def delete_bankroutingregistry(self, record_id: str) -> bool:
+        """Remove a BankRoutingRegistry record."""
+        audit_log("cash_bank_service", f"Deleting BankRoutingRegistry {record_id}")
+        obj = self.get_bankroutingregistry(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"cash_bank_bankroutingregistry_deleted", {"id": record_id})
+        return True
+
+    def list_all_bankroutingregistrys(self) -> List[BankRoutingRegistry]:
+        """Retrieve all BankRoutingRegistry items in database."""
+        records = db_instance.query(self.table_name)
+        return [BankRoutingRegistry.from_dict(r) for r in records]
+
+    def query_bankroutingregistrys(self, filters: Dict[str, Any]) -> List[BankRoutingRegistry]:
+        """Find BankRoutingRegistrys matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [BankRoutingRegistry.from_dict(r) for r in records]
+
+    def verify_bankroutingregistry_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_bankroutingregistry(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for BankRoutingRegistry: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_bankroutingregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"BankRoutingRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for BankRoutingRegistry {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_bankroutingregistry_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_bankroutingregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"BankRoutingRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for BankRoutingRegistry {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_bankroutingregistry_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_bankroutingregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"BankRoutingRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for BankRoutingRegistry {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_bankroutingregistry_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_bankroutingregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"BankRoutingRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for BankRoutingRegistry {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_bankroutingregistry_4_completed", result)
         return result
 

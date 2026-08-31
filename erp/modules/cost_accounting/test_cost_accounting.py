@@ -36,6 +36,12 @@ from erp.modules.cost_accounting.utils import export_costdistributions_to_csv, i
 from erp.modules.cost_accounting.models import CostRateSheet
 from erp.modules.cost_accounting.services import CostRateSheetService
 from erp.modules.cost_accounting.utils import export_costratesheets_to_csv, import_costratesheets_from_csv
+from erp.modules.cost_accounting.models import CostAllocationMap
+from erp.modules.cost_accounting.services import CostAllocationMapService
+from erp.modules.cost_accounting.utils import export_costallocationmaps_to_csv, import_costallocationmaps_from_csv
+from erp.modules.cost_accounting.models import ActivityCostPool
+from erp.modules.cost_accounting.services import ActivityCostPoolService
+from erp.modules.cost_accounting.utils import export_activitycostpools_to_csv, import_activitycostpools_from_csv
 
 class TestCostaccountingModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the cost_accounting module."""
@@ -51,6 +57,8 @@ class TestCostaccountingModule(unittest.TestCase):
         self._overheadrate_service = OverheadRateService()
         self._costdistribution_service = CostDistributionService()
         self._costratesheet_service = CostRateSheetService()
+        self._costallocationmap_service = CostAllocationMapService()
+        self._activitycostpool_service = ActivityCostPoolService()
 
     def test_model_costobject_creation(self):
         """Verify instantiation and attribute validation for CostObject."""
@@ -529,4 +537,100 @@ class TestCostaccountingModule(unittest.TestCase):
         imported = import_costratesheets_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._costratesheet_service.delete_costratesheet(created.id)
+
+    def test_model_costallocationmap_creation(self):
+        """Verify instantiation and attribute validation for CostAllocationMap."""
+        obj = CostAllocationMap(**{"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_costallocationmap_crud(self):
+        """Verify service CRUD operations for CostAllocationMap."""
+        created = self._costallocationmap_service.create_costallocationmap({"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._costallocationmap_service.get_costallocationmap(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._costallocationmap_service.update_costallocationmap(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._costallocationmap_service.list_all_costallocationmaps()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._costallocationmap_service.delete_costallocationmap(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_costallocationmap(self):
+        """Verify domain custom workflow process logic on CostAllocationMap."""
+        created = self._costallocationmap_service.create_costallocationmap({"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._costallocationmap_service.verify_costallocationmap_workflow_state(created.id))
+        res = self._costallocationmap_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._costallocationmap_service.delete_costallocationmap(created.id)
+
+    def test_validation_bounds_costallocationmap(self):
+        """Test validation bounds and non-existent get behavior for CostAllocationMap."""
+        self.assertIsNone(self._costallocationmap_service.get_costallocationmap("invalid_id_value"))
+        created = self._costallocationmap_service.create_costallocationmap({"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._costallocationmap_service.delete_costallocationmap(created.id)
+
+    def test_csv_export_import_costallocationmap(self):
+        """Verify data serialization via CSV utility functions for CostAllocationMap."""
+        created = self._costallocationmap_service.create_costallocationmap({"code": "COSTALLOCATIONMAP-001", "description": "Standard record of type CostAllocationMap", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_costallocationmaps_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_costallocationmaps_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._costallocationmap_service.delete_costallocationmap(created.id)
+
+    def test_model_activitycostpool_creation(self):
+        """Verify instantiation and attribute validation for ActivityCostPool."""
+        obj = ActivityCostPool(**{"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_activitycostpool_crud(self):
+        """Verify service CRUD operations for ActivityCostPool."""
+        created = self._activitycostpool_service.create_activitycostpool({"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._activitycostpool_service.get_activitycostpool(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._activitycostpool_service.update_activitycostpool(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._activitycostpool_service.list_all_activitycostpools()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._activitycostpool_service.delete_activitycostpool(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_activitycostpool(self):
+        """Verify domain custom workflow process logic on ActivityCostPool."""
+        created = self._activitycostpool_service.create_activitycostpool({"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._activitycostpool_service.verify_activitycostpool_workflow_state(created.id))
+        res = self._activitycostpool_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._activitycostpool_service.delete_activitycostpool(created.id)
+
+    def test_validation_bounds_activitycostpool(self):
+        """Test validation bounds and non-existent get behavior for ActivityCostPool."""
+        self.assertIsNone(self._activitycostpool_service.get_activitycostpool("invalid_id_value"))
+        created = self._activitycostpool_service.create_activitycostpool({"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._activitycostpool_service.delete_activitycostpool(created.id)
+
+    def test_csv_export_import_activitycostpool(self):
+        """Verify data serialization via CSV utility functions for ActivityCostPool."""
+        created = self._activitycostpool_service.create_activitycostpool({"code": "ACTIVITYCOSTPOOL-001", "description": "Standard record of type ActivityCostPool", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_activitycostpools_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_activitycostpools_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._activitycostpool_service.delete_activitycostpool(created.id)
 

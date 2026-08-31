@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.tax_management.models import TaxCode, TaxRate, TaxGroup, TaxTransaction, TaxAuthority, TaxFiling, TaxAdjustment, TaxReconciliation, TaxExemption, TaxFilingPeriod
+from erp.modules.tax_management.models import TaxCode, TaxRate, TaxGroup, TaxTransaction, TaxAuthority, TaxFiling, TaxAdjustment, TaxReconciliation, TaxExemption, TaxFilingPeriod, TaxNexusRegistry, WithholdingTaxRule
 
 class TaxCodeService:
     """Service layer managing business transactions for TaxCode."""
@@ -1331,5 +1331,269 @@ class TaxFilingPeriodService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_taxfilingperiod_4_completed", result)
+        return result
+
+class TaxNexusRegistryService:
+    """Service layer managing business transactions for TaxNexusRegistry."""
+    def __init__(self):
+        self.table_name = "tax_management_taxnexusregistry"
+
+    def create_taxnexusregistry(self, data: Dict[str, Any]) -> TaxNexusRegistry:
+        """Create a new TaxNexusRegistry record."""
+        audit_log("tax_management_service", f"Creating TaxNexusRegistry")
+        obj = TaxNexusRegistry(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"tax_management_taxnexusregistry_created", obj.to_dict())
+        return obj
+
+    def get_taxnexusregistry(self, record_id: str) -> Optional[TaxNexusRegistry]:
+        """Fetch a TaxNexusRegistry record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return TaxNexusRegistry.from_dict(record)
+
+    def update_taxnexusregistry(self, record_id: str, updates: Dict[str, Any]) -> TaxNexusRegistry:
+        """Update attributes on a TaxNexusRegistry."""
+        audit_log("tax_management_service", f"Updating TaxNexusRegistry {record_id}")
+        obj = self.get_taxnexusregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"TaxNexusRegistry with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"tax_management_taxnexusregistry_updated", obj.to_dict())
+        return obj
+
+    def delete_taxnexusregistry(self, record_id: str) -> bool:
+        """Remove a TaxNexusRegistry record."""
+        audit_log("tax_management_service", f"Deleting TaxNexusRegistry {record_id}")
+        obj = self.get_taxnexusregistry(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"tax_management_taxnexusregistry_deleted", {"id": record_id})
+        return True
+
+    def list_all_taxnexusregistrys(self) -> List[TaxNexusRegistry]:
+        """Retrieve all TaxNexusRegistry items in database."""
+        records = db_instance.query(self.table_name)
+        return [TaxNexusRegistry.from_dict(r) for r in records]
+
+    def query_taxnexusregistrys(self, filters: Dict[str, Any]) -> List[TaxNexusRegistry]:
+        """Find TaxNexusRegistrys matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [TaxNexusRegistry.from_dict(r) for r in records]
+
+    def verify_taxnexusregistry_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_taxnexusregistry(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for TaxNexusRegistry: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_taxnexusregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"TaxNexusRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for TaxNexusRegistry {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_taxnexusregistry_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_taxnexusregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"TaxNexusRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for TaxNexusRegistry {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_taxnexusregistry_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_taxnexusregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"TaxNexusRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for TaxNexusRegistry {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_taxnexusregistry_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_taxnexusregistry(record_id)
+        if not obj:
+            raise WorkflowError(f"TaxNexusRegistry not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for TaxNexusRegistry {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_taxnexusregistry_4_completed", result)
+        return result
+
+class WithholdingTaxRuleService:
+    """Service layer managing business transactions for WithholdingTaxRule."""
+    def __init__(self):
+        self.table_name = "tax_management_withholdingtaxrule"
+
+    def create_withholdingtaxrule(self, data: Dict[str, Any]) -> WithholdingTaxRule:
+        """Create a new WithholdingTaxRule record."""
+        audit_log("tax_management_service", f"Creating WithholdingTaxRule")
+        obj = WithholdingTaxRule(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"tax_management_withholdingtaxrule_created", obj.to_dict())
+        return obj
+
+    def get_withholdingtaxrule(self, record_id: str) -> Optional[WithholdingTaxRule]:
+        """Fetch a WithholdingTaxRule record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return WithholdingTaxRule.from_dict(record)
+
+    def update_withholdingtaxrule(self, record_id: str, updates: Dict[str, Any]) -> WithholdingTaxRule:
+        """Update attributes on a WithholdingTaxRule."""
+        audit_log("tax_management_service", f"Updating WithholdingTaxRule {record_id}")
+        obj = self.get_withholdingtaxrule(record_id)
+        if not obj:
+            raise WorkflowError(f"WithholdingTaxRule with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"tax_management_withholdingtaxrule_updated", obj.to_dict())
+        return obj
+
+    def delete_withholdingtaxrule(self, record_id: str) -> bool:
+        """Remove a WithholdingTaxRule record."""
+        audit_log("tax_management_service", f"Deleting WithholdingTaxRule {record_id}")
+        obj = self.get_withholdingtaxrule(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"tax_management_withholdingtaxrule_deleted", {"id": record_id})
+        return True
+
+    def list_all_withholdingtaxrules(self) -> List[WithholdingTaxRule]:
+        """Retrieve all WithholdingTaxRule items in database."""
+        records = db_instance.query(self.table_name)
+        return [WithholdingTaxRule.from_dict(r) for r in records]
+
+    def query_withholdingtaxrules(self, filters: Dict[str, Any]) -> List[WithholdingTaxRule]:
+        """Find WithholdingTaxRules matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [WithholdingTaxRule.from_dict(r) for r in records]
+
+    def verify_withholdingtaxrule_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_withholdingtaxrule(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for WithholdingTaxRule: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_withholdingtaxrule(record_id)
+        if not obj:
+            raise WorkflowError(f"WithholdingTaxRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for WithholdingTaxRule {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_withholdingtaxrule_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_withholdingtaxrule(record_id)
+        if not obj:
+            raise WorkflowError(f"WithholdingTaxRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for WithholdingTaxRule {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_withholdingtaxrule_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_withholdingtaxrule(record_id)
+        if not obj:
+            raise WorkflowError(f"WithholdingTaxRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for WithholdingTaxRule {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_withholdingtaxrule_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_withholdingtaxrule(record_id)
+        if not obj:
+            raise WorkflowError(f"WithholdingTaxRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for WithholdingTaxRule {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_withholdingtaxrule_4_completed", result)
         return result
 

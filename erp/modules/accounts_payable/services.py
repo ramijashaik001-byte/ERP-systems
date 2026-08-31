@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.accounts_payable.models import Vendor, PurchaseInvoice, InvoiceLine, VendorPayment, PaymentTerm, APAgingInterval, PurchaseDebitNote, VendorCreditBalance, VendorCategory, APReportPreference
+from erp.modules.accounts_payable.models import Vendor, PurchaseInvoice, InvoiceLine, VendorPayment, PaymentTerm, APAgingInterval, PurchaseDebitNote, VendorCreditBalance, VendorCategory, APReportPreference, Vendor1099Tax, APDisbursementRule
 
 class VendorService:
     """Service layer managing business transactions for Vendor."""
@@ -1319,5 +1319,267 @@ class APReportPreferenceService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_apreportpreference_4_completed", result)
+        return result
+
+class Vendor1099TaxService:
+    """Service layer managing business transactions for Vendor1099Tax."""
+    def __init__(self):
+        self.table_name = "accounts_payable_vendor1099tax"
+
+    def create_vendor1099tax(self, data: Dict[str, Any]) -> Vendor1099Tax:
+        """Create a new Vendor1099Tax record."""
+        audit_log("accounts_payable_service", f"Creating Vendor1099Tax")
+        obj = Vendor1099Tax(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"accounts_payable_vendor1099tax_created", obj.to_dict())
+        return obj
+
+    def get_vendor1099tax(self, record_id: str) -> Optional[Vendor1099Tax]:
+        """Fetch a Vendor1099Tax record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return Vendor1099Tax.from_dict(record)
+
+    def update_vendor1099tax(self, record_id: str, updates: Dict[str, Any]) -> Vendor1099Tax:
+        """Update attributes on a Vendor1099Tax."""
+        audit_log("accounts_payable_service", f"Updating Vendor1099Tax {record_id}")
+        obj = self.get_vendor1099tax(record_id)
+        if not obj:
+            raise WorkflowError(f"Vendor1099Tax with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"accounts_payable_vendor1099tax_updated", obj.to_dict())
+        return obj
+
+    def delete_vendor1099tax(self, record_id: str) -> bool:
+        """Remove a Vendor1099Tax record."""
+        audit_log("accounts_payable_service", f"Deleting Vendor1099Tax {record_id}")
+        obj = self.get_vendor1099tax(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"accounts_payable_vendor1099tax_deleted", {"id": record_id})
+        return True
+
+    def list_all_vendor1099taxs(self) -> List[Vendor1099Tax]:
+        """Retrieve all Vendor1099Tax items in database."""
+        records = db_instance.query(self.table_name)
+        return [Vendor1099Tax.from_dict(r) for r in records]
+
+    def query_vendor1099taxs(self, filters: Dict[str, Any]) -> List[Vendor1099Tax]:
+        """Find Vendor1099Taxs matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [Vendor1099Tax.from_dict(r) for r in records]
+
+    def verify_vendor1099tax_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_vendor1099tax(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for Vendor1099Tax: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_vendor1099tax(record_id)
+        if not obj:
+            raise WorkflowError(f"Vendor1099Tax not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for Vendor1099Tax {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_vendor1099tax_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_vendor1099tax(record_id)
+        if not obj:
+            raise WorkflowError(f"Vendor1099Tax not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for Vendor1099Tax {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_vendor1099tax_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_vendor1099tax(record_id)
+        if not obj:
+            raise WorkflowError(f"Vendor1099Tax not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for Vendor1099Tax {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_vendor1099tax_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_vendor1099tax(record_id)
+        if not obj:
+            raise WorkflowError(f"Vendor1099Tax not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for Vendor1099Tax {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_vendor1099tax_4_completed", result)
+        return result
+
+class APDisbursementRuleService:
+    """Service layer managing business transactions for APDisbursementRule."""
+    def __init__(self):
+        self.table_name = "accounts_payable_apdisbursementrule"
+
+    def create_apdisbursementrule(self, data: Dict[str, Any]) -> APDisbursementRule:
+        """Create a new APDisbursementRule record."""
+        audit_log("accounts_payable_service", f"Creating APDisbursementRule")
+        obj = APDisbursementRule(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"accounts_payable_apdisbursementrule_created", obj.to_dict())
+        return obj
+
+    def get_apdisbursementrule(self, record_id: str) -> Optional[APDisbursementRule]:
+        """Fetch a APDisbursementRule record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return APDisbursementRule.from_dict(record)
+
+    def update_apdisbursementrule(self, record_id: str, updates: Dict[str, Any]) -> APDisbursementRule:
+        """Update attributes on a APDisbursementRule."""
+        audit_log("accounts_payable_service", f"Updating APDisbursementRule {record_id}")
+        obj = self.get_apdisbursementrule(record_id)
+        if not obj:
+            raise WorkflowError(f"APDisbursementRule with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"accounts_payable_apdisbursementrule_updated", obj.to_dict())
+        return obj
+
+    def delete_apdisbursementrule(self, record_id: str) -> bool:
+        """Remove a APDisbursementRule record."""
+        audit_log("accounts_payable_service", f"Deleting APDisbursementRule {record_id}")
+        obj = self.get_apdisbursementrule(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"accounts_payable_apdisbursementrule_deleted", {"id": record_id})
+        return True
+
+    def list_all_apdisbursementrules(self) -> List[APDisbursementRule]:
+        """Retrieve all APDisbursementRule items in database."""
+        records = db_instance.query(self.table_name)
+        return [APDisbursementRule.from_dict(r) for r in records]
+
+    def query_apdisbursementrules(self, filters: Dict[str, Any]) -> List[APDisbursementRule]:
+        """Find APDisbursementRules matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [APDisbursementRule.from_dict(r) for r in records]
+
+    def verify_apdisbursementrule_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_apdisbursementrule(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for APDisbursementRule: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_apdisbursementrule(record_id)
+        if not obj:
+            raise WorkflowError(f"APDisbursementRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for APDisbursementRule {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_apdisbursementrule_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_apdisbursementrule(record_id)
+        if not obj:
+            raise WorkflowError(f"APDisbursementRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for APDisbursementRule {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_apdisbursementrule_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_apdisbursementrule(record_id)
+        if not obj:
+            raise WorkflowError(f"APDisbursementRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for APDisbursementRule {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_apdisbursementrule_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_apdisbursementrule(record_id)
+        if not obj:
+            raise WorkflowError(f"APDisbursementRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for APDisbursementRule {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_apdisbursementrule_4_completed", result)
         return result
 

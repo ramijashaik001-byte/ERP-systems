@@ -17,6 +17,8 @@ from erp.modules.fixed_assets.services import AssetRevaluationService
 from erp.modules.fixed_assets.services import InsurancePolicyService
 from erp.modules.fixed_assets.services import AssetInsuranceClaimService
 from erp.modules.fixed_assets.services import AssetLocationService
+from erp.modules.fixed_assets.services import LeasedAssetRecordService
+from erp.modules.fixed_assets.services import DepreciationMethodRuleService
 
 class Fixed_assetsApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Fixed_assetsApiController:
         self._insurancepolicy_service = InsurancePolicyService()
         self._assetinsuranceclaim_service = AssetInsuranceClaimService()
         self._assetlocation_service = AssetLocationService()
+        self._leasedassetrecord_service = LeasedAssetRecordService()
+        self._depreciationmethodrule_service = DepreciationMethodRuleService()
 
     def create_asset_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/fixed_assets/assets"""
@@ -688,6 +692,136 @@ class Fixed_assetsApiController:
             auth_service.authorize(token, ["ledger", "fixed_assets_user"])
             is_valid = self._assetlocation_service.verify_assetlocation_workflow_state(record_id)
             res = self._assetlocation_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_leasedassetrecord_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/fixed_assets/leasedassetrecords"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "fixed_assets_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._leasedassetrecord_service.create_leasedassetrecord(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_leasedassetrecord_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/fixed_assets/leasedassetrecords/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "fixed_assets_user"])
+            obj = self._leasedassetrecord_service.get_leasedassetrecord(record_id)
+            if not obj:
+                return {"status": "error", "message": "LeasedAssetRecord not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_leasedassetrecord_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/fixed_assets/leasedassetrecords/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "fixed_assets_manager"])
+            obj = self._leasedassetrecord_service.update_leasedassetrecord(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_leasedassetrecord_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/fixed_assets/leasedassetrecords/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._leasedassetrecord_service.delete_leasedassetrecord(record_id)
+            if not success:
+                return {"status": "error", "message": "LeasedAssetRecord not found", "code": 404}
+            return {"status": "success", "message": "LeasedAssetRecord deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_leasedassetrecords_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/fixed_assets/leasedassetrecords"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "fixed_assets_user"])
+            items = self._leasedassetrecord_service.list_all_leasedassetrecords()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_leasedassetrecord_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/fixed_assets/leasedassetrecords/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "fixed_assets_user"])
+            is_valid = self._leasedassetrecord_service.verify_leasedassetrecord_workflow_state(record_id)
+            res = self._leasedassetrecord_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_depreciationmethodrule_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/fixed_assets/depreciationmethodrules"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "fixed_assets_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._depreciationmethodrule_service.create_depreciationmethodrule(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_depreciationmethodrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/fixed_assets/depreciationmethodrules/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "fixed_assets_user"])
+            obj = self._depreciationmethodrule_service.get_depreciationmethodrule(record_id)
+            if not obj:
+                return {"status": "error", "message": "DepreciationMethodRule not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_depreciationmethodrule_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/fixed_assets/depreciationmethodrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "fixed_assets_manager"])
+            obj = self._depreciationmethodrule_service.update_depreciationmethodrule(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_depreciationmethodrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/fixed_assets/depreciationmethodrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._depreciationmethodrule_service.delete_depreciationmethodrule(record_id)
+            if not success:
+                return {"status": "error", "message": "DepreciationMethodRule not found", "code": 404}
+            return {"status": "success", "message": "DepreciationMethodRule deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_depreciationmethodrules_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/fixed_assets/depreciationmethodrules"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "fixed_assets_user"])
+            items = self._depreciationmethodrule_service.list_all_depreciationmethodrules()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_depreciationmethodrule_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/fixed_assets/depreciationmethodrules/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "fixed_assets_user"])
+            is_valid = self._depreciationmethodrule_service.verify_depreciationmethodrule_workflow_state(record_id)
+            res = self._depreciationmethodrule_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

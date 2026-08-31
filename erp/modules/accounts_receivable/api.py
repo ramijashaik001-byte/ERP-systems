@@ -17,6 +17,8 @@ from erp.modules.accounts_receivable.services import SalesCreditNoteService
 from erp.modules.accounts_receivable.services import DunningNoticeService
 from erp.modules.accounts_receivable.services import CustomerCategoryService
 from erp.modules.accounts_receivable.services import ARReportPreferenceService
+from erp.modules.accounts_receivable.services import ARCollectionRuleService
+from erp.modules.accounts_receivable.services import LateFeePolicyService
 
 class Accounts_receivableApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Accounts_receivableApiController:
         self._dunningnotice_service = DunningNoticeService()
         self._customercategory_service = CustomerCategoryService()
         self._arreportpreference_service = ARReportPreferenceService()
+        self._arcollectionrule_service = ARCollectionRuleService()
+        self._latefeepolicy_service = LateFeePolicyService()
 
     def create_customer_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/accounts_receivable/customers"""
@@ -710,6 +714,136 @@ class Accounts_receivableApiController:
             auth_service.authorize(token, ["ledger", "accounts_receivable_user"])
             is_valid = self._arreportpreference_service.verify_arreportpreference_workflow_state(record_id)
             res = self._arreportpreference_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_arcollectionrule_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_receivable/arcollectionrules"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_receivable_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._arcollectionrule_service.create_arcollectionrule(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_arcollectionrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_receivable/arcollectionrules/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_receivable_user"])
+            obj = self._arcollectionrule_service.get_arcollectionrule(record_id)
+            if not obj:
+                return {"status": "error", "message": "ARCollectionRule not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_arcollectionrule_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/accounts_receivable/arcollectionrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_receivable_manager"])
+            obj = self._arcollectionrule_service.update_arcollectionrule(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_arcollectionrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/accounts_receivable/arcollectionrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._arcollectionrule_service.delete_arcollectionrule(record_id)
+            if not success:
+                return {"status": "error", "message": "ARCollectionRule not found", "code": 404}
+            return {"status": "success", "message": "ARCollectionRule deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_arcollectionrules_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_receivable/arcollectionrules"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_receivable_user"])
+            items = self._arcollectionrule_service.list_all_arcollectionrules()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_arcollectionrule_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_receivable/arcollectionrules/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "accounts_receivable_user"])
+            is_valid = self._arcollectionrule_service.verify_arcollectionrule_workflow_state(record_id)
+            res = self._arcollectionrule_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_latefeepolicy_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_receivable/latefeepolicys"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_receivable_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._latefeepolicy_service.create_latefeepolicy(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_latefeepolicy_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_receivable/latefeepolicys/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_receivable_user"])
+            obj = self._latefeepolicy_service.get_latefeepolicy(record_id)
+            if not obj:
+                return {"status": "error", "message": "LateFeePolicy not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_latefeepolicy_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/accounts_receivable/latefeepolicys/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "accounts_receivable_manager"])
+            obj = self._latefeepolicy_service.update_latefeepolicy(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_latefeepolicy_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/accounts_receivable/latefeepolicys/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._latefeepolicy_service.delete_latefeepolicy(record_id)
+            if not success:
+                return {"status": "error", "message": "LateFeePolicy not found", "code": 404}
+            return {"status": "success", "message": "LateFeePolicy deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_latefeepolicys_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/accounts_receivable/latefeepolicys"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "accounts_receivable_user"])
+            items = self._latefeepolicy_service.list_all_latefeepolicys()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_latefeepolicy_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/accounts_receivable/latefeepolicys/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "accounts_receivable_user"])
+            is_valid = self._latefeepolicy_service.verify_latefeepolicy_workflow_state(record_id)
+            res = self._latefeepolicy_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

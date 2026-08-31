@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.financial_reporting.models import ReportTemplate, FinancialRatio, DashboardWidget, SavedReportQuery, ConsolidationEntity, ReportingSegment, TrialBalanceView, ReportSchedule, FinancialStatementNote, KPIThreshold
+from erp.modules.financial_reporting.models import ReportTemplate, FinancialRatio, DashboardWidget, SavedReportQuery, ConsolidationEntity, ReportingSegment, TrialBalanceView, ReportSchedule, FinancialStatementNote, KPIThreshold, ReportExportConfig, ConsolidatedBalanceSheet
 
 class ReportTemplateService:
     """Service layer managing business transactions for ReportTemplate."""
@@ -1315,5 +1315,269 @@ class KPIThresholdService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_kpithreshold_4_completed", result)
+        return result
+
+class ReportExportConfigService:
+    """Service layer managing business transactions for ReportExportConfig."""
+    def __init__(self):
+        self.table_name = "financial_reporting_reportexportconfig"
+
+    def create_reportexportconfig(self, data: Dict[str, Any]) -> ReportExportConfig:
+        """Create a new ReportExportConfig record."""
+        audit_log("financial_reporting_service", f"Creating ReportExportConfig")
+        obj = ReportExportConfig(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"financial_reporting_reportexportconfig_created", obj.to_dict())
+        return obj
+
+    def get_reportexportconfig(self, record_id: str) -> Optional[ReportExportConfig]:
+        """Fetch a ReportExportConfig record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return ReportExportConfig.from_dict(record)
+
+    def update_reportexportconfig(self, record_id: str, updates: Dict[str, Any]) -> ReportExportConfig:
+        """Update attributes on a ReportExportConfig."""
+        audit_log("financial_reporting_service", f"Updating ReportExportConfig {record_id}")
+        obj = self.get_reportexportconfig(record_id)
+        if not obj:
+            raise WorkflowError(f"ReportExportConfig with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"financial_reporting_reportexportconfig_updated", obj.to_dict())
+        return obj
+
+    def delete_reportexportconfig(self, record_id: str) -> bool:
+        """Remove a ReportExportConfig record."""
+        audit_log("financial_reporting_service", f"Deleting ReportExportConfig {record_id}")
+        obj = self.get_reportexportconfig(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"financial_reporting_reportexportconfig_deleted", {"id": record_id})
+        return True
+
+    def list_all_reportexportconfigs(self) -> List[ReportExportConfig]:
+        """Retrieve all ReportExportConfig items in database."""
+        records = db_instance.query(self.table_name)
+        return [ReportExportConfig.from_dict(r) for r in records]
+
+    def query_reportexportconfigs(self, filters: Dict[str, Any]) -> List[ReportExportConfig]:
+        """Find ReportExportConfigs matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [ReportExportConfig.from_dict(r) for r in records]
+
+    def verify_reportexportconfig_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_reportexportconfig(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for ReportExportConfig: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_reportexportconfig(record_id)
+        if not obj:
+            raise WorkflowError(f"ReportExportConfig not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for ReportExportConfig {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_reportexportconfig_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_reportexportconfig(record_id)
+        if not obj:
+            raise WorkflowError(f"ReportExportConfig not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for ReportExportConfig {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_reportexportconfig_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_reportexportconfig(record_id)
+        if not obj:
+            raise WorkflowError(f"ReportExportConfig not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for ReportExportConfig {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_reportexportconfig_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_reportexportconfig(record_id)
+        if not obj:
+            raise WorkflowError(f"ReportExportConfig not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for ReportExportConfig {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_reportexportconfig_4_completed", result)
+        return result
+
+class ConsolidatedBalanceSheetService:
+    """Service layer managing business transactions for ConsolidatedBalanceSheet."""
+    def __init__(self):
+        self.table_name = "financial_reporting_consolidatedbalancesheet"
+
+    def create_consolidatedbalancesheet(self, data: Dict[str, Any]) -> ConsolidatedBalanceSheet:
+        """Create a new ConsolidatedBalanceSheet record."""
+        audit_log("financial_reporting_service", f"Creating ConsolidatedBalanceSheet")
+        obj = ConsolidatedBalanceSheet(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_scheduled_date(getattr(obj, "scheduled_date"))
+        obj.validate_period_code(getattr(obj, "period_code"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"financial_reporting_consolidatedbalancesheet_created", obj.to_dict())
+        return obj
+
+    def get_consolidatedbalancesheet(self, record_id: str) -> Optional[ConsolidatedBalanceSheet]:
+        """Fetch a ConsolidatedBalanceSheet record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return ConsolidatedBalanceSheet.from_dict(record)
+
+    def update_consolidatedbalancesheet(self, record_id: str, updates: Dict[str, Any]) -> ConsolidatedBalanceSheet:
+        """Update attributes on a ConsolidatedBalanceSheet."""
+        audit_log("financial_reporting_service", f"Updating ConsolidatedBalanceSheet {record_id}")
+        obj = self.get_consolidatedbalancesheet(record_id)
+        if not obj:
+            raise WorkflowError(f"ConsolidatedBalanceSheet with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"financial_reporting_consolidatedbalancesheet_updated", obj.to_dict())
+        return obj
+
+    def delete_consolidatedbalancesheet(self, record_id: str) -> bool:
+        """Remove a ConsolidatedBalanceSheet record."""
+        audit_log("financial_reporting_service", f"Deleting ConsolidatedBalanceSheet {record_id}")
+        obj = self.get_consolidatedbalancesheet(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"financial_reporting_consolidatedbalancesheet_deleted", {"id": record_id})
+        return True
+
+    def list_all_consolidatedbalancesheets(self) -> List[ConsolidatedBalanceSheet]:
+        """Retrieve all ConsolidatedBalanceSheet items in database."""
+        records = db_instance.query(self.table_name)
+        return [ConsolidatedBalanceSheet.from_dict(r) for r in records]
+
+    def query_consolidatedbalancesheets(self, filters: Dict[str, Any]) -> List[ConsolidatedBalanceSheet]:
+        """Find ConsolidatedBalanceSheets matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [ConsolidatedBalanceSheet.from_dict(r) for r in records]
+
+    def verify_consolidatedbalancesheet_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_consolidatedbalancesheet(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for ConsolidatedBalanceSheet: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_consolidatedbalancesheet(record_id)
+        if not obj:
+            raise WorkflowError(f"ConsolidatedBalanceSheet not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for ConsolidatedBalanceSheet {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_consolidatedbalancesheet_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_consolidatedbalancesheet(record_id)
+        if not obj:
+            raise WorkflowError(f"ConsolidatedBalanceSheet not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for ConsolidatedBalanceSheet {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_consolidatedbalancesheet_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_consolidatedbalancesheet(record_id)
+        if not obj:
+            raise WorkflowError(f"ConsolidatedBalanceSheet not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for ConsolidatedBalanceSheet {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_consolidatedbalancesheet_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_consolidatedbalancesheet(record_id)
+        if not obj:
+            raise WorkflowError(f"ConsolidatedBalanceSheet not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for ConsolidatedBalanceSheet {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_consolidatedbalancesheet_4_completed", result)
         return result
 

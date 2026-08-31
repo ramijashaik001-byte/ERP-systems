@@ -783,5 +783,157 @@ def helper_func_apreportpreference_variant_6(data: Dict[str, Any]) -> Dict[str, 
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_vendor1099taxs_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export Vendor1099Tax records into a formatted CSV string."""
+    audit_log("accounts_payable_utils", f"Exporting Vendor1099Taxs to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
 
-# AP commit 4: Filtering vendor payments
+def import_vendor1099taxs_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import Vendor1099Tax records from a CSV string representation."""
+    audit_log("accounts_payable_utils", f"Importing Vendor1099Taxs from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_vendor1099tax_report(item: Dict[str, Any]) -> str:
+    """Format Vendor1099Tax into a human-readable display string."""
+    lines = [f"=== Vendor1099Tax Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_vendor1099tax_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for Vendor1099Tax."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_vendor1099tax_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for Vendor1099Tax."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_vendor1099tax_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for Vendor1099Tax."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_vendor1099tax_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for Vendor1099Tax."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_vendor1099tax_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for Vendor1099Tax."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_vendor1099tax_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for Vendor1099Tax."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_apdisbursementrules_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export APDisbursementRule records into a formatted CSV string."""
+    audit_log("accounts_payable_utils", f"Exporting APDisbursementRules to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_apdisbursementrules_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import APDisbursementRule records from a CSV string representation."""
+    audit_log("accounts_payable_utils", f"Importing APDisbursementRules from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_apdisbursementrule_report(item: Dict[str, Any]) -> str:
+    """Format APDisbursementRule into a human-readable display string."""
+    lines = [f"=== APDisbursementRule Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_apdisbursementrule_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for APDisbursementRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_apdisbursementrule_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for APDisbursementRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_apdisbursementrule_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for APDisbursementRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_apdisbursementrule_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for APDisbursementRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_apdisbursementrule_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for APDisbursementRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_apdisbursementrule_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for APDisbursementRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

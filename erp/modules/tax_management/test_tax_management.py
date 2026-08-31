@@ -36,6 +36,12 @@ from erp.modules.tax_management.utils import export_taxexemptions_to_csv, import
 from erp.modules.tax_management.models import TaxFilingPeriod
 from erp.modules.tax_management.services import TaxFilingPeriodService
 from erp.modules.tax_management.utils import export_taxfilingperiods_to_csv, import_taxfilingperiods_from_csv
+from erp.modules.tax_management.models import TaxNexusRegistry
+from erp.modules.tax_management.services import TaxNexusRegistryService
+from erp.modules.tax_management.utils import export_taxnexusregistrys_to_csv, import_taxnexusregistrys_from_csv
+from erp.modules.tax_management.models import WithholdingTaxRule
+from erp.modules.tax_management.services import WithholdingTaxRuleService
+from erp.modules.tax_management.utils import export_withholdingtaxrules_to_csv, import_withholdingtaxrules_from_csv
 
 class TestTaxmanagementModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the tax_management module."""
@@ -51,6 +57,8 @@ class TestTaxmanagementModule(unittest.TestCase):
         self._taxreconciliation_service = TaxReconciliationService()
         self._taxexemption_service = TaxExemptionService()
         self._taxfilingperiod_service = TaxFilingPeriodService()
+        self._taxnexusregistry_service = TaxNexusRegistryService()
+        self._withholdingtaxrule_service = WithholdingTaxRuleService()
 
     def test_model_taxcode_creation(self):
         """Verify instantiation and attribute validation for TaxCode."""
@@ -533,4 +541,100 @@ class TestTaxmanagementModule(unittest.TestCase):
         imported = import_taxfilingperiods_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._taxfilingperiod_service.delete_taxfilingperiod(created.id)
+
+    def test_model_taxnexusregistry_creation(self):
+        """Verify instantiation and attribute validation for TaxNexusRegistry."""
+        obj = TaxNexusRegistry(**{"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_taxnexusregistry_crud(self):
+        """Verify service CRUD operations for TaxNexusRegistry."""
+        created = self._taxnexusregistry_service.create_taxnexusregistry({"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._taxnexusregistry_service.get_taxnexusregistry(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._taxnexusregistry_service.update_taxnexusregistry(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._taxnexusregistry_service.list_all_taxnexusregistrys()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._taxnexusregistry_service.delete_taxnexusregistry(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_taxnexusregistry(self):
+        """Verify domain custom workflow process logic on TaxNexusRegistry."""
+        created = self._taxnexusregistry_service.create_taxnexusregistry({"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._taxnexusregistry_service.verify_taxnexusregistry_workflow_state(created.id))
+        res = self._taxnexusregistry_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._taxnexusregistry_service.delete_taxnexusregistry(created.id)
+
+    def test_validation_bounds_taxnexusregistry(self):
+        """Test validation bounds and non-existent get behavior for TaxNexusRegistry."""
+        self.assertIsNone(self._taxnexusregistry_service.get_taxnexusregistry("invalid_id_value"))
+        created = self._taxnexusregistry_service.create_taxnexusregistry({"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._taxnexusregistry_service.delete_taxnexusregistry(created.id)
+
+    def test_csv_export_import_taxnexusregistry(self):
+        """Verify data serialization via CSV utility functions for TaxNexusRegistry."""
+        created = self._taxnexusregistry_service.create_taxnexusregistry({"code": "TAXNEXUSREGISTRY-001", "description": "Standard record of type TaxNexusRegistry", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_taxnexusregistrys_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_taxnexusregistrys_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._taxnexusregistry_service.delete_taxnexusregistry(created.id)
+
+    def test_model_withholdingtaxrule_creation(self):
+        """Verify instantiation and attribute validation for WithholdingTaxRule."""
+        obj = WithholdingTaxRule(**{"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_withholdingtaxrule_crud(self):
+        """Verify service CRUD operations for WithholdingTaxRule."""
+        created = self._withholdingtaxrule_service.create_withholdingtaxrule({"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._withholdingtaxrule_service.get_withholdingtaxrule(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._withholdingtaxrule_service.update_withholdingtaxrule(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._withholdingtaxrule_service.list_all_withholdingtaxrules()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._withholdingtaxrule_service.delete_withholdingtaxrule(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_withholdingtaxrule(self):
+        """Verify domain custom workflow process logic on WithholdingTaxRule."""
+        created = self._withholdingtaxrule_service.create_withholdingtaxrule({"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._withholdingtaxrule_service.verify_withholdingtaxrule_workflow_state(created.id))
+        res = self._withholdingtaxrule_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._withholdingtaxrule_service.delete_withholdingtaxrule(created.id)
+
+    def test_validation_bounds_withholdingtaxrule(self):
+        """Test validation bounds and non-existent get behavior for WithholdingTaxRule."""
+        self.assertIsNone(self._withholdingtaxrule_service.get_withholdingtaxrule("invalid_id_value"))
+        created = self._withholdingtaxrule_service.create_withholdingtaxrule({"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._withholdingtaxrule_service.delete_withholdingtaxrule(created.id)
+
+    def test_csv_export_import_withholdingtaxrule(self):
+        """Verify data serialization via CSV utility functions for WithholdingTaxRule."""
+        created = self._withholdingtaxrule_service.create_withholdingtaxrule({"code": "WITHHOLDINGTAXRULE-001", "description": "Standard record of type WithholdingTaxRule", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_withholdingtaxrules_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_withholdingtaxrules_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._withholdingtaxrule_service.delete_withholdingtaxrule(created.id)
 

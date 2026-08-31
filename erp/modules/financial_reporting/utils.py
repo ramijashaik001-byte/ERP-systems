@@ -771,3 +771,159 @@ def helper_func_kpithreshold_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_reportexportconfigs_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export ReportExportConfig records into a formatted CSV string."""
+    audit_log("financial_reporting_utils", f"Exporting ReportExportConfigs to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_reportexportconfigs_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import ReportExportConfig records from a CSV string representation."""
+    audit_log("financial_reporting_utils", f"Importing ReportExportConfigs from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_reportexportconfig_report(item: Dict[str, Any]) -> str:
+    """Format ReportExportConfig into a human-readable display string."""
+    lines = [f"=== ReportExportConfig Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_reportexportconfig_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for ReportExportConfig."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_reportexportconfig_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for ReportExportConfig."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_reportexportconfig_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for ReportExportConfig."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_reportexportconfig_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for ReportExportConfig."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_reportexportconfig_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for ReportExportConfig."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_reportexportconfig_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for ReportExportConfig."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_consolidatedbalancesheets_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export ConsolidatedBalanceSheet records into a formatted CSV string."""
+    audit_log("financial_reporting_utils", f"Exporting ConsolidatedBalanceSheets to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_consolidatedbalancesheets_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import ConsolidatedBalanceSheet records from a CSV string representation."""
+    audit_log("financial_reporting_utils", f"Importing ConsolidatedBalanceSheets from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_consolidatedbalancesheet_report(item: Dict[str, Any]) -> str:
+    """Format ConsolidatedBalanceSheet into a human-readable display string."""
+    lines = [f"=== ConsolidatedBalanceSheet Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Scheduled Date: {item.get('scheduled_date')}")
+    lines.append(f"Period Code: {item.get('period_code')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_consolidatedbalancesheet_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for ConsolidatedBalanceSheet."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_consolidatedbalancesheet_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for ConsolidatedBalanceSheet."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_consolidatedbalancesheet_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for ConsolidatedBalanceSheet."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_consolidatedbalancesheet_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for ConsolidatedBalanceSheet."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_consolidatedbalancesheet_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for ConsolidatedBalanceSheet."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_consolidatedbalancesheet_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for ConsolidatedBalanceSheet."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

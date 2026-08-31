@@ -17,6 +17,8 @@ from erp.modules.general_ledger.services import FiscalYearService
 from erp.modules.general_ledger.services import LedgerBalanceService
 from erp.modules.general_ledger.services import LedgerReconciliationService
 from erp.modules.general_ledger.services import ClosingEntryService
+from erp.modules.general_ledger.services import RecurringJournalService
+from erp.modules.general_ledger.services import AccrualRuleService
 
 class General_ledgerApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class General_ledgerApiController:
         self._ledgerbalance_service = LedgerBalanceService()
         self._ledgerreconciliation_service = LedgerReconciliationService()
         self._closingentry_service = ClosingEntryService()
+        self._recurringjournal_service = RecurringJournalService()
+        self._accrualrule_service = AccrualRuleService()
 
     def create_account_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/general_ledger/accounts"""
@@ -706,6 +710,140 @@ class General_ledgerApiController:
             auth_service.authorize(token, ["ledger", "general_ledger_user"])
             is_valid = self._closingentry_service.verify_closingentry_workflow_state(record_id)
             res = self._closingentry_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_recurringjournal_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/general_ledger/recurringjournals"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "general_ledger_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._recurringjournal_service.create_recurringjournal(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_recurringjournal_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/general_ledger/recurringjournals/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "general_ledger_user"])
+            obj = self._recurringjournal_service.get_recurringjournal(record_id)
+            if not obj:
+                return {"status": "error", "message": "RecurringJournal not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_recurringjournal_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/general_ledger/recurringjournals/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "general_ledger_manager"])
+            obj = self._recurringjournal_service.update_recurringjournal(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_recurringjournal_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/general_ledger/recurringjournals/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._recurringjournal_service.delete_recurringjournal(record_id)
+            if not success:
+                return {"status": "error", "message": "RecurringJournal not found", "code": 404}
+            return {"status": "success", "message": "RecurringJournal deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_recurringjournals_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/general_ledger/recurringjournals"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "general_ledger_user"])
+            items = self._recurringjournal_service.list_all_recurringjournals()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_recurringjournal_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/general_ledger/recurringjournals/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "general_ledger_user"])
+            is_valid = self._recurringjournal_service.verify_recurringjournal_workflow_state(record_id)
+            res = self._recurringjournal_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_accrualrule_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/general_ledger/accrualrules"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "general_ledger_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._accrualrule_service.create_accrualrule(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_accrualrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/general_ledger/accrualrules/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "general_ledger_user"])
+            obj = self._accrualrule_service.get_accrualrule(record_id)
+            if not obj:
+                return {"status": "error", "message": "AccrualRule not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_accrualrule_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/general_ledger/accrualrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "general_ledger_manager"])
+            obj = self._accrualrule_service.update_accrualrule(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_accrualrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/general_ledger/accrualrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._accrualrule_service.delete_accrualrule(record_id)
+            if not success:
+                return {"status": "error", "message": "AccrualRule not found", "code": 404}
+            return {"status": "success", "message": "AccrualRule deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_accrualrules_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/general_ledger/accrualrules"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "general_ledger_user"])
+            items = self._accrualrule_service.list_all_accrualrules()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_accrualrule_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/general_ledger/accrualrules/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "general_ledger_user"])
+            is_valid = self._accrualrule_service.verify_accrualrule_workflow_state(record_id)
+            res = self._accrualrule_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

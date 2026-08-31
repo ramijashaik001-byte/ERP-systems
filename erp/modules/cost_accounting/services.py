@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.cost_accounting.models import CostObject, CostPool, CostDriver, AllocationRule, CostAllocationRun, ActivityRate, DirectExpense, OverheadRate, CostDistribution, CostRateSheet
+from erp.modules.cost_accounting.models import CostObject, CostPool, CostDriver, AllocationRule, CostAllocationRun, ActivityRate, DirectExpense, OverheadRate, CostDistribution, CostRateSheet, CostAllocationMap, ActivityCostPool
 
 class CostObjectService:
     """Service layer managing business transactions for CostObject."""
@@ -1327,5 +1327,269 @@ class CostRateSheetService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_costratesheet_4_completed", result)
+        return result
+
+class CostAllocationMapService:
+    """Service layer managing business transactions for CostAllocationMap."""
+    def __init__(self):
+        self.table_name = "cost_accounting_costallocationmap"
+
+    def create_costallocationmap(self, data: Dict[str, Any]) -> CostAllocationMap:
+        """Create a new CostAllocationMap record."""
+        audit_log("cost_accounting_service", f"Creating CostAllocationMap")
+        obj = CostAllocationMap(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"cost_accounting_costallocationmap_created", obj.to_dict())
+        return obj
+
+    def get_costallocationmap(self, record_id: str) -> Optional[CostAllocationMap]:
+        """Fetch a CostAllocationMap record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return CostAllocationMap.from_dict(record)
+
+    def update_costallocationmap(self, record_id: str, updates: Dict[str, Any]) -> CostAllocationMap:
+        """Update attributes on a CostAllocationMap."""
+        audit_log("cost_accounting_service", f"Updating CostAllocationMap {record_id}")
+        obj = self.get_costallocationmap(record_id)
+        if not obj:
+            raise WorkflowError(f"CostAllocationMap with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"cost_accounting_costallocationmap_updated", obj.to_dict())
+        return obj
+
+    def delete_costallocationmap(self, record_id: str) -> bool:
+        """Remove a CostAllocationMap record."""
+        audit_log("cost_accounting_service", f"Deleting CostAllocationMap {record_id}")
+        obj = self.get_costallocationmap(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"cost_accounting_costallocationmap_deleted", {"id": record_id})
+        return True
+
+    def list_all_costallocationmaps(self) -> List[CostAllocationMap]:
+        """Retrieve all CostAllocationMap items in database."""
+        records = db_instance.query(self.table_name)
+        return [CostAllocationMap.from_dict(r) for r in records]
+
+    def query_costallocationmaps(self, filters: Dict[str, Any]) -> List[CostAllocationMap]:
+        """Find CostAllocationMaps matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [CostAllocationMap.from_dict(r) for r in records]
+
+    def verify_costallocationmap_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_costallocationmap(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for CostAllocationMap: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_costallocationmap(record_id)
+        if not obj:
+            raise WorkflowError(f"CostAllocationMap not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for CostAllocationMap {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_costallocationmap_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_costallocationmap(record_id)
+        if not obj:
+            raise WorkflowError(f"CostAllocationMap not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for CostAllocationMap {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_costallocationmap_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_costallocationmap(record_id)
+        if not obj:
+            raise WorkflowError(f"CostAllocationMap not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for CostAllocationMap {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_costallocationmap_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_costallocationmap(record_id)
+        if not obj:
+            raise WorkflowError(f"CostAllocationMap not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for CostAllocationMap {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_costallocationmap_4_completed", result)
+        return result
+
+class ActivityCostPoolService:
+    """Service layer managing business transactions for ActivityCostPool."""
+    def __init__(self):
+        self.table_name = "cost_accounting_activitycostpool"
+
+    def create_activitycostpool(self, data: Dict[str, Any]) -> ActivityCostPool:
+        """Create a new ActivityCostPool record."""
+        audit_log("cost_accounting_service", f"Creating ActivityCostPool")
+        obj = ActivityCostPool(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"cost_accounting_activitycostpool_created", obj.to_dict())
+        return obj
+
+    def get_activitycostpool(self, record_id: str) -> Optional[ActivityCostPool]:
+        """Fetch a ActivityCostPool record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return ActivityCostPool.from_dict(record)
+
+    def update_activitycostpool(self, record_id: str, updates: Dict[str, Any]) -> ActivityCostPool:
+        """Update attributes on a ActivityCostPool."""
+        audit_log("cost_accounting_service", f"Updating ActivityCostPool {record_id}")
+        obj = self.get_activitycostpool(record_id)
+        if not obj:
+            raise WorkflowError(f"ActivityCostPool with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"cost_accounting_activitycostpool_updated", obj.to_dict())
+        return obj
+
+    def delete_activitycostpool(self, record_id: str) -> bool:
+        """Remove a ActivityCostPool record."""
+        audit_log("cost_accounting_service", f"Deleting ActivityCostPool {record_id}")
+        obj = self.get_activitycostpool(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"cost_accounting_activitycostpool_deleted", {"id": record_id})
+        return True
+
+    def list_all_activitycostpools(self) -> List[ActivityCostPool]:
+        """Retrieve all ActivityCostPool items in database."""
+        records = db_instance.query(self.table_name)
+        return [ActivityCostPool.from_dict(r) for r in records]
+
+    def query_activitycostpools(self, filters: Dict[str, Any]) -> List[ActivityCostPool]:
+        """Find ActivityCostPools matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [ActivityCostPool.from_dict(r) for r in records]
+
+    def verify_activitycostpool_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_activitycostpool(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for ActivityCostPool: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_activitycostpool(record_id)
+        if not obj:
+            raise WorkflowError(f"ActivityCostPool not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for ActivityCostPool {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_activitycostpool_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_activitycostpool(record_id)
+        if not obj:
+            raise WorkflowError(f"ActivityCostPool not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for ActivityCostPool {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_activitycostpool_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_activitycostpool(record_id)
+        if not obj:
+            raise WorkflowError(f"ActivityCostPool not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for ActivityCostPool {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_activitycostpool_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_activitycostpool(record_id)
+        if not obj:
+            raise WorkflowError(f"ActivityCostPool not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for ActivityCostPool {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_activitycostpool_4_completed", result)
         return result
 

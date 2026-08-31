@@ -17,6 +17,8 @@ from erp.modules.cash_bank.services import ReconciliationMatchService
 from erp.modules.cash_bank.services import PettyCashLogService
 from erp.modules.cash_bank.services import BankChargeConfigService
 from erp.modules.cash_bank.services import CashDrawerService
+from erp.modules.cash_bank.services import DepositSlipService
+from erp.modules.cash_bank.services import BankRoutingRegistryService
 
 class Cash_bankApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Cash_bankApiController:
         self._pettycashlog_service = PettyCashLogService()
         self._bankchargeconfig_service = BankChargeConfigService()
         self._cashdrawer_service = CashDrawerService()
+        self._depositslip_service = DepositSlipService()
+        self._bankroutingregistry_service = BankRoutingRegistryService()
 
     def create_bankaccount_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/cash_bank/bankaccounts"""
@@ -682,6 +686,136 @@ class Cash_bankApiController:
             auth_service.authorize(token, ["ledger", "cash_bank_user"])
             is_valid = self._cashdrawer_service.verify_cashdrawer_workflow_state(record_id)
             res = self._cashdrawer_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_depositslip_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cash_bank/depositslips"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cash_bank_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._depositslip_service.create_depositslip(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_depositslip_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cash_bank/depositslips/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cash_bank_user"])
+            obj = self._depositslip_service.get_depositslip(record_id)
+            if not obj:
+                return {"status": "error", "message": "DepositSlip not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_depositslip_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/cash_bank/depositslips/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cash_bank_manager"])
+            obj = self._depositslip_service.update_depositslip(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_depositslip_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/cash_bank/depositslips/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._depositslip_service.delete_depositslip(record_id)
+            if not success:
+                return {"status": "error", "message": "DepositSlip not found", "code": 404}
+            return {"status": "success", "message": "DepositSlip deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_depositslips_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cash_bank/depositslips"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cash_bank_user"])
+            items = self._depositslip_service.list_all_depositslips()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_depositslip_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cash_bank/depositslips/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "cash_bank_user"])
+            is_valid = self._depositslip_service.verify_depositslip_workflow_state(record_id)
+            res = self._depositslip_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_bankroutingregistry_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cash_bank/bankroutingregistrys"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cash_bank_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._bankroutingregistry_service.create_bankroutingregistry(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_bankroutingregistry_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cash_bank/bankroutingregistrys/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cash_bank_user"])
+            obj = self._bankroutingregistry_service.get_bankroutingregistry(record_id)
+            if not obj:
+                return {"status": "error", "message": "BankRoutingRegistry not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_bankroutingregistry_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/cash_bank/bankroutingregistrys/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cash_bank_manager"])
+            obj = self._bankroutingregistry_service.update_bankroutingregistry(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_bankroutingregistry_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/cash_bank/bankroutingregistrys/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._bankroutingregistry_service.delete_bankroutingregistry(record_id)
+            if not success:
+                return {"status": "error", "message": "BankRoutingRegistry not found", "code": 404}
+            return {"status": "success", "message": "BankRoutingRegistry deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_bankroutingregistrys_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cash_bank/bankroutingregistrys"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cash_bank_user"])
+            items = self._bankroutingregistry_service.list_all_bankroutingregistrys()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_bankroutingregistry_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cash_bank/bankroutingregistrys/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "cash_bank_user"])
+            is_valid = self._bankroutingregistry_service.verify_bankroutingregistry_workflow_state(record_id)
+            res = self._bankroutingregistry_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

@@ -772,3 +772,153 @@ def helper_func_assetlocation_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_leasedassetrecords_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export LeasedAssetRecord records into a formatted CSV string."""
+    audit_log("fixed_assets_utils", f"Exporting LeasedAssetRecords to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_leasedassetrecords_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import LeasedAssetRecord records from a CSV string representation."""
+    audit_log("fixed_assets_utils", f"Importing LeasedAssetRecords from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_leasedassetrecord_report(item: Dict[str, Any]) -> str:
+    """Format LeasedAssetRecord into a human-readable display string."""
+    lines = [f"=== LeasedAssetRecord Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_leasedassetrecord_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for LeasedAssetRecord."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_leasedassetrecord_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for LeasedAssetRecord."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_leasedassetrecord_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for LeasedAssetRecord."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_leasedassetrecord_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for LeasedAssetRecord."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_leasedassetrecord_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for LeasedAssetRecord."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_leasedassetrecord_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for LeasedAssetRecord."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_depreciationmethodrules_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export DepreciationMethodRule records into a formatted CSV string."""
+    audit_log("fixed_assets_utils", f"Exporting DepreciationMethodRules to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_depreciationmethodrules_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import DepreciationMethodRule records from a CSV string representation."""
+    audit_log("fixed_assets_utils", f"Importing DepreciationMethodRules from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        results.append(item)
+    return results
+
+def format_depreciationmethodrule_report(item: Dict[str, Any]) -> str:
+    """Format DepreciationMethodRule into a human-readable display string."""
+    lines = [f"=== DepreciationMethodRule Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_depreciationmethodrule_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for DepreciationMethodRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_depreciationmethodrule_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for DepreciationMethodRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_depreciationmethodrule_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for DepreciationMethodRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_depreciationmethodrule_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for DepreciationMethodRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_depreciationmethodrule_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for DepreciationMethodRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_depreciationmethodrule_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for DepreciationMethodRule."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

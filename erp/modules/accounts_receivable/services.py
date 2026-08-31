@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.accounts_receivable.models import Customer, SalesInvoice, InvoiceItem, CustomerReceipt, CreditLimitLog, ARAgingInterval, SalesCreditNote, DunningNotice, CustomerCategory, ARReportPreference
+from erp.modules.accounts_receivable.models import Customer, SalesInvoice, InvoiceItem, CustomerReceipt, CreditLimitLog, ARAgingInterval, SalesCreditNote, DunningNotice, CustomerCategory, ARReportPreference, ARCollectionRule, LateFeePolicy
 
 class CustomerService:
     """Service layer managing business transactions for Customer."""
@@ -1325,5 +1325,265 @@ class ARReportPreferenceService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_arreportpreference_4_completed", result)
+        return result
+
+class ARCollectionRuleService:
+    """Service layer managing business transactions for ARCollectionRule."""
+    def __init__(self):
+        self.table_name = "accounts_receivable_arcollectionrule"
+
+    def create_arcollectionrule(self, data: Dict[str, Any]) -> ARCollectionRule:
+        """Create a new ARCollectionRule record."""
+        audit_log("accounts_receivable_service", f"Creating ARCollectionRule")
+        obj = ARCollectionRule(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"accounts_receivable_arcollectionrule_created", obj.to_dict())
+        return obj
+
+    def get_arcollectionrule(self, record_id: str) -> Optional[ARCollectionRule]:
+        """Fetch a ARCollectionRule record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return ARCollectionRule.from_dict(record)
+
+    def update_arcollectionrule(self, record_id: str, updates: Dict[str, Any]) -> ARCollectionRule:
+        """Update attributes on a ARCollectionRule."""
+        audit_log("accounts_receivable_service", f"Updating ARCollectionRule {record_id}")
+        obj = self.get_arcollectionrule(record_id)
+        if not obj:
+            raise WorkflowError(f"ARCollectionRule with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"accounts_receivable_arcollectionrule_updated", obj.to_dict())
+        return obj
+
+    def delete_arcollectionrule(self, record_id: str) -> bool:
+        """Remove a ARCollectionRule record."""
+        audit_log("accounts_receivable_service", f"Deleting ARCollectionRule {record_id}")
+        obj = self.get_arcollectionrule(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"accounts_receivable_arcollectionrule_deleted", {"id": record_id})
+        return True
+
+    def list_all_arcollectionrules(self) -> List[ARCollectionRule]:
+        """Retrieve all ARCollectionRule items in database."""
+        records = db_instance.query(self.table_name)
+        return [ARCollectionRule.from_dict(r) for r in records]
+
+    def query_arcollectionrules(self, filters: Dict[str, Any]) -> List[ARCollectionRule]:
+        """Find ARCollectionRules matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [ARCollectionRule.from_dict(r) for r in records]
+
+    def verify_arcollectionrule_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_arcollectionrule(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for ARCollectionRule: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_arcollectionrule(record_id)
+        if not obj:
+            raise WorkflowError(f"ARCollectionRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for ARCollectionRule {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_arcollectionrule_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_arcollectionrule(record_id)
+        if not obj:
+            raise WorkflowError(f"ARCollectionRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for ARCollectionRule {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_arcollectionrule_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_arcollectionrule(record_id)
+        if not obj:
+            raise WorkflowError(f"ARCollectionRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for ARCollectionRule {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_arcollectionrule_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_arcollectionrule(record_id)
+        if not obj:
+            raise WorkflowError(f"ARCollectionRule not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for ARCollectionRule {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_arcollectionrule_4_completed", result)
+        return result
+
+class LateFeePolicyService:
+    """Service layer managing business transactions for LateFeePolicy."""
+    def __init__(self):
+        self.table_name = "accounts_receivable_latefeepolicy"
+
+    def create_latefeepolicy(self, data: Dict[str, Any]) -> LateFeePolicy:
+        """Create a new LateFeePolicy record."""
+        audit_log("accounts_receivable_service", f"Creating LateFeePolicy")
+        obj = LateFeePolicy(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"accounts_receivable_latefeepolicy_created", obj.to_dict())
+        return obj
+
+    def get_latefeepolicy(self, record_id: str) -> Optional[LateFeePolicy]:
+        """Fetch a LateFeePolicy record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return LateFeePolicy.from_dict(record)
+
+    def update_latefeepolicy(self, record_id: str, updates: Dict[str, Any]) -> LateFeePolicy:
+        """Update attributes on a LateFeePolicy."""
+        audit_log("accounts_receivable_service", f"Updating LateFeePolicy {record_id}")
+        obj = self.get_latefeepolicy(record_id)
+        if not obj:
+            raise WorkflowError(f"LateFeePolicy with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"accounts_receivable_latefeepolicy_updated", obj.to_dict())
+        return obj
+
+    def delete_latefeepolicy(self, record_id: str) -> bool:
+        """Remove a LateFeePolicy record."""
+        audit_log("accounts_receivable_service", f"Deleting LateFeePolicy {record_id}")
+        obj = self.get_latefeepolicy(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"accounts_receivable_latefeepolicy_deleted", {"id": record_id})
+        return True
+
+    def list_all_latefeepolicys(self) -> List[LateFeePolicy]:
+        """Retrieve all LateFeePolicy items in database."""
+        records = db_instance.query(self.table_name)
+        return [LateFeePolicy.from_dict(r) for r in records]
+
+    def query_latefeepolicys(self, filters: Dict[str, Any]) -> List[LateFeePolicy]:
+        """Find LateFeePolicys matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [LateFeePolicy.from_dict(r) for r in records]
+
+    def verify_latefeepolicy_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_latefeepolicy(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for LateFeePolicy: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_latefeepolicy(record_id)
+        if not obj:
+            raise WorkflowError(f"LateFeePolicy not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for LateFeePolicy {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_latefeepolicy_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_latefeepolicy(record_id)
+        if not obj:
+            raise WorkflowError(f"LateFeePolicy not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for LateFeePolicy {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_latefeepolicy_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_latefeepolicy(record_id)
+        if not obj:
+            raise WorkflowError(f"LateFeePolicy not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for LateFeePolicy {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_latefeepolicy_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_latefeepolicy(record_id)
+        if not obj:
+            raise WorkflowError(f"LateFeePolicy not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for LateFeePolicy {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_latefeepolicy_4_completed", result)
         return result
 

@@ -17,6 +17,8 @@ from erp.modules.purchase_sales_integration.services import CostOfGoodsSoldAdjus
 from erp.modules.purchase_sales_integration.services import IntegrationLogService
 from erp.modules.purchase_sales_integration.services import IntegrationMappingService
 from erp.modules.purchase_sales_integration.services import IntegrationErrorLogService
+from erp.modules.purchase_sales_integration.services import GLAccountMappingRuleService
+from erp.modules.purchase_sales_integration.services import SubledgerReconciliationLogService
 
 class Purchase_sales_integrationApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Purchase_sales_integrationApiController:
         self._integrationlog_service = IntegrationLogService()
         self._integrationmapping_service = IntegrationMappingService()
         self._integrationerrorlog_service = IntegrationErrorLogService()
+        self._glaccountmappingrule_service = GLAccountMappingRuleService()
+        self._subledgerreconciliationlog_service = SubledgerReconciliationLogService()
 
     def create_purchaseordermatch_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/purchase_sales_integration/purchaseordermatchs"""
@@ -710,6 +714,140 @@ class Purchase_sales_integrationApiController:
             auth_service.authorize(token, ["ledger", "purchase_sales_integration_user"])
             is_valid = self._integrationerrorlog_service.verify_integrationerrorlog_workflow_state(record_id)
             res = self._integrationerrorlog_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_glaccountmappingrule_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/purchase_sales_integration/glaccountmappingrules"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "purchase_sales_integration_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "count_value" not in payload:
+                return {"status": "error", "message": "Missing required parameter: count_value", "code": 400}
+            if "seq_num" not in payload:
+                return {"status": "error", "message": "Missing required parameter: seq_num", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._glaccountmappingrule_service.create_glaccountmappingrule(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_glaccountmappingrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/purchase_sales_integration/glaccountmappingrules/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "purchase_sales_integration_user"])
+            obj = self._glaccountmappingrule_service.get_glaccountmappingrule(record_id)
+            if not obj:
+                return {"status": "error", "message": "GLAccountMappingRule not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_glaccountmappingrule_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/purchase_sales_integration/glaccountmappingrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "purchase_sales_integration_manager"])
+            obj = self._glaccountmappingrule_service.update_glaccountmappingrule(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_glaccountmappingrule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/purchase_sales_integration/glaccountmappingrules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._glaccountmappingrule_service.delete_glaccountmappingrule(record_id)
+            if not success:
+                return {"status": "error", "message": "GLAccountMappingRule not found", "code": 404}
+            return {"status": "success", "message": "GLAccountMappingRule deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_glaccountmappingrules_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/purchase_sales_integration/glaccountmappingrules"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "purchase_sales_integration_user"])
+            items = self._glaccountmappingrule_service.list_all_glaccountmappingrules()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_glaccountmappingrule_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/purchase_sales_integration/glaccountmappingrules/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "purchase_sales_integration_user"])
+            is_valid = self._glaccountmappingrule_service.verify_glaccountmappingrule_workflow_state(record_id)
+            res = self._glaccountmappingrule_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_subledgerreconciliationlog_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/purchase_sales_integration/subledgerreconciliationlogs"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "purchase_sales_integration_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._subledgerreconciliationlog_service.create_subledgerreconciliationlog(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_subledgerreconciliationlog_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/purchase_sales_integration/subledgerreconciliationlogs/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "purchase_sales_integration_user"])
+            obj = self._subledgerreconciliationlog_service.get_subledgerreconciliationlog(record_id)
+            if not obj:
+                return {"status": "error", "message": "SubledgerReconciliationLog not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_subledgerreconciliationlog_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/purchase_sales_integration/subledgerreconciliationlogs/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "purchase_sales_integration_manager"])
+            obj = self._subledgerreconciliationlog_service.update_subledgerreconciliationlog(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_subledgerreconciliationlog_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/purchase_sales_integration/subledgerreconciliationlogs/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._subledgerreconciliationlog_service.delete_subledgerreconciliationlog(record_id)
+            if not success:
+                return {"status": "error", "message": "SubledgerReconciliationLog not found", "code": 404}
+            return {"status": "success", "message": "SubledgerReconciliationLog deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_subledgerreconciliationlogs_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/purchase_sales_integration/subledgerreconciliationlogs"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "purchase_sales_integration_user"])
+            items = self._subledgerreconciliationlog_service.list_all_subledgerreconciliationlogs()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_subledgerreconciliationlog_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/purchase_sales_integration/subledgerreconciliationlogs/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "purchase_sales_integration_user"])
+            is_valid = self._subledgerreconciliationlog_service.verify_subledgerreconciliationlog_workflow_state(record_id)
+            res = self._subledgerreconciliationlog_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

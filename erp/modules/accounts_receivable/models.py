@@ -1341,5 +1341,197 @@ class ARReportPreference(BaseModel):
         audit_log("arreportpreference_model", f"Checking integrity of ARReportPreference ID: {self.id}")
         return len(self.id) > 10
 
+class ARCollectionRule(BaseModel):
+    """
+    Model representing a ARCollectionRule in the accounts_receivable module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to ARCollectionRule.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "ARCOLLECTIONRULE-001")
+        self._description = kwargs.get("description", "Standard record of type ARCollectionRule")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
 
-# AR commit 5: Automated escalation dunning levels
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the ARCollectionRule model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ARCollectionRule":
+        """Deserialize a ARCollectionRule object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert ARCollectionRule to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_arcollectionrule_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("arcollectionrule_model", f"Checking integrity of ARCollectionRule ID: {self.id}")
+        return len(self.id) > 10
+
+class LateFeePolicy(BaseModel):
+    """
+    Model representing a LateFeePolicy in the accounts_receivable module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to LateFeePolicy.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "LATEFEEPOLICY-001")
+        self._description = kwargs.get("description", "Standard record of type LateFeePolicy")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
+
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the LateFeePolicy model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "LateFeePolicy":
+        """Deserialize a LateFeePolicy object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert LateFeePolicy to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_latefeepolicy_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("latefeepolicy_model", f"Checking integrity of LateFeePolicy ID: {self.id}")
+        return len(self.id) > 10
+

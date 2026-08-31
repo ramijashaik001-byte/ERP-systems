@@ -17,6 +17,8 @@ from erp.modules.cost_accounting.services import DirectExpenseService
 from erp.modules.cost_accounting.services import OverheadRateService
 from erp.modules.cost_accounting.services import CostDistributionService
 from erp.modules.cost_accounting.services import CostRateSheetService
+from erp.modules.cost_accounting.services import CostAllocationMapService
+from erp.modules.cost_accounting.services import ActivityCostPoolService
 
 class Cost_accountingApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Cost_accountingApiController:
         self._overheadrate_service = OverheadRateService()
         self._costdistribution_service = CostDistributionService()
         self._costratesheet_service = CostRateSheetService()
+        self._costallocationmap_service = CostAllocationMapService()
+        self._activitycostpool_service = ActivityCostPoolService()
 
     def create_costobject_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/cost_accounting/costobjects"""
@@ -714,6 +718,144 @@ class Cost_accountingApiController:
             auth_service.authorize(token, ["ledger", "cost_accounting_user"])
             is_valid = self._costratesheet_service.verify_costratesheet_workflow_state(record_id)
             res = self._costratesheet_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_costallocationmap_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cost_accounting/costallocationmaps"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cost_accounting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._costallocationmap_service.create_costallocationmap(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_costallocationmap_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cost_accounting/costallocationmaps/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cost_accounting_user"])
+            obj = self._costallocationmap_service.get_costallocationmap(record_id)
+            if not obj:
+                return {"status": "error", "message": "CostAllocationMap not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_costallocationmap_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/cost_accounting/costallocationmaps/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cost_accounting_manager"])
+            obj = self._costallocationmap_service.update_costallocationmap(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_costallocationmap_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/cost_accounting/costallocationmaps/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._costallocationmap_service.delete_costallocationmap(record_id)
+            if not success:
+                return {"status": "error", "message": "CostAllocationMap not found", "code": 404}
+            return {"status": "success", "message": "CostAllocationMap deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_costallocationmaps_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cost_accounting/costallocationmaps"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cost_accounting_user"])
+            items = self._costallocationmap_service.list_all_costallocationmaps()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_costallocationmap_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cost_accounting/costallocationmaps/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "cost_accounting_user"])
+            is_valid = self._costallocationmap_service.verify_costallocationmap_workflow_state(record_id)
+            res = self._costallocationmap_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_activitycostpool_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cost_accounting/activitycostpools"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cost_accounting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._activitycostpool_service.create_activitycostpool(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_activitycostpool_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cost_accounting/activitycostpools/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cost_accounting_user"])
+            obj = self._activitycostpool_service.get_activitycostpool(record_id)
+            if not obj:
+                return {"status": "error", "message": "ActivityCostPool not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_activitycostpool_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/cost_accounting/activitycostpools/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "cost_accounting_manager"])
+            obj = self._activitycostpool_service.update_activitycostpool(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_activitycostpool_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/cost_accounting/activitycostpools/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._activitycostpool_service.delete_activitycostpool(record_id)
+            if not success:
+                return {"status": "error", "message": "ActivityCostPool not found", "code": 404}
+            return {"status": "success", "message": "ActivityCostPool deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_activitycostpools_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/cost_accounting/activitycostpools"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "cost_accounting_user"])
+            items = self._activitycostpool_service.list_all_activitycostpools()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_activitycostpool_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/cost_accounting/activitycostpools/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "cost_accounting_user"])
+            is_valid = self._activitycostpool_service.verify_activitycostpool_workflow_state(record_id)
+            res = self._activitycostpool_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

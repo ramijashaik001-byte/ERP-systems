@@ -1344,3 +1344,241 @@ class IntegrationErrorLog(BaseModel):
         audit_log("integrationerrorlog_model", f"Checking integrity of IntegrationErrorLog ID: {self.id}")
         return len(self.id) > 10
 
+class GLAccountMappingRule(BaseModel):
+    """
+    Model representing a GLAccountMappingRule in the purchase_sales_integration module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to GLAccountMappingRule.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "GLACCOUNTMAPPINGRULE-001")
+        self._description = kwargs.get("description", "Standard record of type GLAccountMappingRule")
+        self._count_value = kwargs.get("count_value", 10)
+        self._seq_num = kwargs.get("seq_num", 1)
+        self._status_state = kwargs.get("status_state", "ACTIVE")
+
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def count_value(self) -> int:
+        """Get the value of count_value."""
+        return self._count_value
+
+    @count_value.setter
+    def count_value(self, value: int):
+        """Set the value of count_value with validation."""
+        if value is None:
+            raise ValidationError("count_value cannot be None.")
+        self.validate_count_value(value)
+        self._count_value = value
+        self.update_timestamp()
+
+    def validate_count_value(self, value: int):
+        """Validate requirements for count_value."""
+        if not isinstance(value, (int, float)):
+            raise ValidationError("count_value must be numeric.")
+        if value < 0:
+            raise ValidationError("count_value cannot be negative.")
+
+    @property
+    def seq_num(self) -> int:
+        """Get the value of seq_num."""
+        return self._seq_num
+
+    @seq_num.setter
+    def seq_num(self, value: int):
+        """Set the value of seq_num with validation."""
+        if value is None:
+            raise ValidationError("seq_num cannot be None.")
+        self.validate_seq_num(value)
+        self._seq_num = value
+        self.update_timestamp()
+
+    def validate_seq_num(self, value: int):
+        """Validate requirements for seq_num."""
+        if not isinstance(value, (int, float)):
+            raise ValidationError("seq_num must be numeric.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the GLAccountMappingRule model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["count_value"] = self._count_value
+        data["seq_num"] = self._seq_num
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "GLAccountMappingRule":
+        """Deserialize a GLAccountMappingRule object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert GLAccountMappingRule to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_glaccountmappingrule_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("glaccountmappingrule_model", f"Checking integrity of GLAccountMappingRule ID: {self.id}")
+        return len(self.id) > 10
+
+class SubledgerReconciliationLog(BaseModel):
+    """
+    Model representing a SubledgerReconciliationLog in the purchase_sales_integration module.
+    This class encapsulates validations, serialization, business rules,
+    and custom properties unique to SubledgerReconciliationLog.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._code = kwargs.get("code", "SUBLEDGERRECONCILIATIONLOG-001")
+        self._description = kwargs.get("description", "Standard record of type SubledgerReconciliationLog")
+        self._status_state = kwargs.get("status_state", "ACTIVE")
+
+    @property
+    def code(self) -> str:
+        """Get the value of code."""
+        return self._code
+
+    @code.setter
+    def code(self, value: str):
+        """Set the value of code with validation."""
+        if value is None:
+            raise ValidationError("code cannot be None.")
+        self.validate_code(value)
+        self._code = value
+        self.update_timestamp()
+
+    def validate_code(self, value: str):
+        """Validate requirements for code."""
+        if not isinstance(value, str):
+            raise ValidationError("code must be a string.")
+        if len(value) < 1:
+            raise ValidationError("code cannot be empty.")
+
+    @property
+    def description(self) -> str:
+        """Get the value of description."""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set the value of description with validation."""
+        if value is None:
+            raise ValidationError("description cannot be None.")
+        self.validate_description(value)
+        self._description = value
+        self.update_timestamp()
+
+    def validate_description(self, value: str):
+        """Validate requirements for description."""
+        if not isinstance(value, str):
+            raise ValidationError("description must be a string.")
+        if len(value) < 1:
+            raise ValidationError("description cannot be empty.")
+
+    @property
+    def status_state(self) -> str:
+        """Get the value of status_state."""
+        return self._status_state
+
+    @status_state.setter
+    def status_state(self, value: str):
+        """Set the value of status_state with validation."""
+        if value is None:
+            raise ValidationError("status_state cannot be None.")
+        self.validate_status_state(value)
+        self._status_state = value
+        self.update_timestamp()
+
+    def validate_status_state(self, value: str):
+        """Validate requirements for status_state."""
+        if not isinstance(value, str):
+            raise ValidationError("status_state must be a string.")
+        if len(value) < 1:
+            raise ValidationError("status_state cannot be empty.")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the SubledgerReconciliationLog model to a dict."""
+        data = super().to_dict()
+        data["code"] = self._code
+        data["description"] = self._description
+        data["status_state"] = self._status_state
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "SubledgerReconciliationLog":
+        """Deserialize a SubledgerReconciliationLog object from a dict."""
+        return cls(**data)
+
+    def to_json(self) -> str:
+        """Convert SubledgerReconciliationLog to a JSON string."""
+        return json.dumps(self.to_dict(), default=str)
+
+    def run_subledgerreconciliationlog_integrity_check(self) -> bool:
+        """Standard model integrity evaluation checks."""
+        audit_log("subledgerreconciliationlog_model", f"Checking integrity of SubledgerReconciliationLog ID: {self.id}")
+        return len(self.id) > 10
+

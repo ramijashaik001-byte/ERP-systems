@@ -17,6 +17,8 @@ from erp.modules.budgeting.services import ForecastModelService
 from erp.modules.budgeting.services import ForecastScenarioService
 from erp.modules.budgeting.services import BudgetTypeService
 from erp.modules.budgeting.services import BudgetApproverService
+from erp.modules.budgeting.services import BudgetThresholdAlertService
+from erp.modules.budgeting.services import ZeroBasedBudgetTemplateService
 
 class BudgetingApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class BudgetingApiController:
         self._forecastscenario_service = ForecastScenarioService()
         self._budgettype_service = BudgetTypeService()
         self._budgetapprover_service = BudgetApproverService()
+        self._budgetthresholdalert_service = BudgetThresholdAlertService()
+        self._zerobasedbudgettemplate_service = ZeroBasedBudgetTemplateService()
 
     def create_budgetplan_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/budgeting/budgetplans"""
@@ -682,6 +686,136 @@ class BudgetingApiController:
             auth_service.authorize(token, ["ledger", "budgeting_user"])
             is_valid = self._budgetapprover_service.verify_budgetapprover_workflow_state(record_id)
             res = self._budgetapprover_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_budgetthresholdalert_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/budgeting/budgetthresholdalerts"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "budgeting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._budgetthresholdalert_service.create_budgetthresholdalert(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_budgetthresholdalert_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/budgeting/budgetthresholdalerts/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "budgeting_user"])
+            obj = self._budgetthresholdalert_service.get_budgetthresholdalert(record_id)
+            if not obj:
+                return {"status": "error", "message": "BudgetThresholdAlert not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_budgetthresholdalert_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/budgeting/budgetthresholdalerts/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "budgeting_manager"])
+            obj = self._budgetthresholdalert_service.update_budgetthresholdalert(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_budgetthresholdalert_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/budgeting/budgetthresholdalerts/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._budgetthresholdalert_service.delete_budgetthresholdalert(record_id)
+            if not success:
+                return {"status": "error", "message": "BudgetThresholdAlert not found", "code": 404}
+            return {"status": "success", "message": "BudgetThresholdAlert deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_budgetthresholdalerts_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/budgeting/budgetthresholdalerts"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "budgeting_user"])
+            items = self._budgetthresholdalert_service.list_all_budgetthresholdalerts()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_budgetthresholdalert_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/budgeting/budgetthresholdalerts/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "budgeting_user"])
+            is_valid = self._budgetthresholdalert_service.verify_budgetthresholdalert_workflow_state(record_id)
+            res = self._budgetthresholdalert_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_zerobasedbudgettemplate_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/budgeting/zerobasedbudgettemplates"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "budgeting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._zerobasedbudgettemplate_service.create_zerobasedbudgettemplate(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_zerobasedbudgettemplate_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/budgeting/zerobasedbudgettemplates/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "budgeting_user"])
+            obj = self._zerobasedbudgettemplate_service.get_zerobasedbudgettemplate(record_id)
+            if not obj:
+                return {"status": "error", "message": "ZeroBasedBudgetTemplate not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_zerobasedbudgettemplate_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/budgeting/zerobasedbudgettemplates/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "budgeting_manager"])
+            obj = self._zerobasedbudgettemplate_service.update_zerobasedbudgettemplate(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_zerobasedbudgettemplate_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/budgeting/zerobasedbudgettemplates/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._zerobasedbudgettemplate_service.delete_zerobasedbudgettemplate(record_id)
+            if not success:
+                return {"status": "error", "message": "ZeroBasedBudgetTemplate not found", "code": 404}
+            return {"status": "success", "message": "ZeroBasedBudgetTemplate deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_zerobasedbudgettemplates_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/budgeting/zerobasedbudgettemplates"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "budgeting_user"])
+            items = self._zerobasedbudgettemplate_service.list_all_zerobasedbudgettemplates()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_zerobasedbudgettemplate_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/budgeting/zerobasedbudgettemplates/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "budgeting_user"])
+            is_valid = self._zerobasedbudgettemplate_service.verify_zerobasedbudgettemplate_workflow_state(record_id)
+            res = self._zerobasedbudgettemplate_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

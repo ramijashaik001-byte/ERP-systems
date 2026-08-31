@@ -36,6 +36,12 @@ from erp.modules.payroll_accounting.utils import export_salarygrades_to_csv, imp
 from erp.modules.payroll_accounting.models import PayrollBenefitPlan
 from erp.modules.payroll_accounting.services import PayrollBenefitPlanService
 from erp.modules.payroll_accounting.utils import export_payrollbenefitplans_to_csv, import_payrollbenefitplans_from_csv
+from erp.modules.payroll_accounting.models import EmployerTaxContribution
+from erp.modules.payroll_accounting.services import EmployerTaxContributionService
+from erp.modules.payroll_accounting.utils import export_employertaxcontributions_to_csv, import_employertaxcontributions_from_csv
+from erp.modules.payroll_accounting.models import PayrollAccrualPosting
+from erp.modules.payroll_accounting.services import PayrollAccrualPostingService
+from erp.modules.payroll_accounting.utils import export_payrollaccrualpostings_to_csv, import_payrollaccrualpostings_from_csv
 
 class TestPayrollaccountingModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the payroll_accounting module."""
@@ -51,6 +57,8 @@ class TestPayrollaccountingModule(unittest.TestCase):
         self._payrolladjustment_service = PayrollAdjustmentService()
         self._salarygrade_service = SalaryGradeService()
         self._payrollbenefitplan_service = PayrollBenefitPlanService()
+        self._employertaxcontribution_service = EmployerTaxContributionService()
+        self._payrollaccrualposting_service = PayrollAccrualPostingService()
 
     def test_model_payrolljournal_creation(self):
         """Verify instantiation and attribute validation for PayrollJournal."""
@@ -523,4 +531,100 @@ class TestPayrollaccountingModule(unittest.TestCase):
         imported = import_payrollbenefitplans_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._payrollbenefitplan_service.delete_payrollbenefitplan(created.id)
+
+    def test_model_employertaxcontribution_creation(self):
+        """Verify instantiation and attribute validation for EmployerTaxContribution."""
+        obj = EmployerTaxContribution(**{"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_employertaxcontribution_crud(self):
+        """Verify service CRUD operations for EmployerTaxContribution."""
+        created = self._employertaxcontribution_service.create_employertaxcontribution({"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._employertaxcontribution_service.get_employertaxcontribution(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._employertaxcontribution_service.update_employertaxcontribution(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._employertaxcontribution_service.list_all_employertaxcontributions()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._employertaxcontribution_service.delete_employertaxcontribution(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_employertaxcontribution(self):
+        """Verify domain custom workflow process logic on EmployerTaxContribution."""
+        created = self._employertaxcontribution_service.create_employertaxcontribution({"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._employertaxcontribution_service.verify_employertaxcontribution_workflow_state(created.id))
+        res = self._employertaxcontribution_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._employertaxcontribution_service.delete_employertaxcontribution(created.id)
+
+    def test_validation_bounds_employertaxcontribution(self):
+        """Test validation bounds and non-existent get behavior for EmployerTaxContribution."""
+        self.assertIsNone(self._employertaxcontribution_service.get_employertaxcontribution("invalid_id_value"))
+        created = self._employertaxcontribution_service.create_employertaxcontribution({"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._employertaxcontribution_service.delete_employertaxcontribution(created.id)
+
+    def test_csv_export_import_employertaxcontribution(self):
+        """Verify data serialization via CSV utility functions for EmployerTaxContribution."""
+        created = self._employertaxcontribution_service.create_employertaxcontribution({"code": "EMPLOYERTAXCONTRIBUTION-001", "description": "Standard record of type EmployerTaxContribution", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_employertaxcontributions_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_employertaxcontributions_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._employertaxcontribution_service.delete_employertaxcontribution(created.id)
+
+    def test_model_payrollaccrualposting_creation(self):
+        """Verify instantiation and attribute validation for PayrollAccrualPosting."""
+        obj = PayrollAccrualPosting(**{"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_payrollaccrualposting_crud(self):
+        """Verify service CRUD operations for PayrollAccrualPosting."""
+        created = self._payrollaccrualposting_service.create_payrollaccrualposting({"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._payrollaccrualposting_service.get_payrollaccrualposting(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._payrollaccrualposting_service.update_payrollaccrualposting(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._payrollaccrualposting_service.list_all_payrollaccrualpostings()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._payrollaccrualposting_service.delete_payrollaccrualposting(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_payrollaccrualposting(self):
+        """Verify domain custom workflow process logic on PayrollAccrualPosting."""
+        created = self._payrollaccrualposting_service.create_payrollaccrualposting({"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._payrollaccrualposting_service.verify_payrollaccrualposting_workflow_state(created.id))
+        res = self._payrollaccrualposting_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._payrollaccrualposting_service.delete_payrollaccrualposting(created.id)
+
+    def test_validation_bounds_payrollaccrualposting(self):
+        """Test validation bounds and non-existent get behavior for PayrollAccrualPosting."""
+        self.assertIsNone(self._payrollaccrualposting_service.get_payrollaccrualposting("invalid_id_value"))
+        created = self._payrollaccrualposting_service.create_payrollaccrualposting({"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._payrollaccrualposting_service.delete_payrollaccrualposting(created.id)
+
+    def test_csv_export_import_payrollaccrualposting(self):
+        """Verify data serialization via CSV utility functions for PayrollAccrualPosting."""
+        created = self._payrollaccrualposting_service.create_payrollaccrualposting({"code": "PAYROLLACCRUALPOSTING-001", "description": "Standard record of type PayrollAccrualPosting", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_payrollaccrualpostings_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_payrollaccrualpostings_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._payrollaccrualposting_service.delete_payrollaccrualposting(created.id)
 

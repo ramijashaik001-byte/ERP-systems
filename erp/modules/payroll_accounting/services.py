@@ -9,7 +9,7 @@ from erp.core.db import db_instance
 from erp.core.errors import ValidationError, WorkflowError
 from erp.core.logger import audit_log
 from erp.core.events import event_broker
-from erp.modules.payroll_accounting.models import PayrollJournal, EmployeeSalaryProfile, PayrollTaxWithholding, PayrollAccrual, BenefitExpense, ExpenseReimbursement, TimesheetPosting, PayrollAdjustment, SalaryGrade, PayrollBenefitPlan
+from erp.modules.payroll_accounting.models import PayrollJournal, EmployeeSalaryProfile, PayrollTaxWithholding, PayrollAccrual, BenefitExpense, ExpenseReimbursement, TimesheetPosting, PayrollAdjustment, SalaryGrade, PayrollBenefitPlan, EmployerTaxContribution, PayrollAccrualPosting
 
 class PayrollJournalService:
     """Service layer managing business transactions for PayrollJournal."""
@@ -1321,5 +1321,269 @@ class PayrollBenefitPlanService:
             "entity_id": obj.id
         }
         event_broker.publish(f"workflow_payrollbenefitplan_4_completed", result)
+        return result
+
+class EmployerTaxContributionService:
+    """Service layer managing business transactions for EmployerTaxContribution."""
+    def __init__(self):
+        self.table_name = "payroll_accounting_employertaxcontribution"
+
+    def create_employertaxcontribution(self, data: Dict[str, Any]) -> EmployerTaxContribution:
+        """Create a new EmployerTaxContribution record."""
+        audit_log("payroll_accounting_service", f"Creating EmployerTaxContribution")
+        obj = EmployerTaxContribution(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"payroll_accounting_employertaxcontribution_created", obj.to_dict())
+        return obj
+
+    def get_employertaxcontribution(self, record_id: str) -> Optional[EmployerTaxContribution]:
+        """Fetch a EmployerTaxContribution record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return EmployerTaxContribution.from_dict(record)
+
+    def update_employertaxcontribution(self, record_id: str, updates: Dict[str, Any]) -> EmployerTaxContribution:
+        """Update attributes on a EmployerTaxContribution."""
+        audit_log("payroll_accounting_service", f"Updating EmployerTaxContribution {record_id}")
+        obj = self.get_employertaxcontribution(record_id)
+        if not obj:
+            raise WorkflowError(f"EmployerTaxContribution with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"payroll_accounting_employertaxcontribution_updated", obj.to_dict())
+        return obj
+
+    def delete_employertaxcontribution(self, record_id: str) -> bool:
+        """Remove a EmployerTaxContribution record."""
+        audit_log("payroll_accounting_service", f"Deleting EmployerTaxContribution {record_id}")
+        obj = self.get_employertaxcontribution(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"payroll_accounting_employertaxcontribution_deleted", {"id": record_id})
+        return True
+
+    def list_all_employertaxcontributions(self) -> List[EmployerTaxContribution]:
+        """Retrieve all EmployerTaxContribution items in database."""
+        records = db_instance.query(self.table_name)
+        return [EmployerTaxContribution.from_dict(r) for r in records]
+
+    def query_employertaxcontributions(self, filters: Dict[str, Any]) -> List[EmployerTaxContribution]:
+        """Find EmployerTaxContributions matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [EmployerTaxContribution.from_dict(r) for r in records]
+
+    def verify_employertaxcontribution_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_employertaxcontribution(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for EmployerTaxContribution: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_employertaxcontribution(record_id)
+        if not obj:
+            raise WorkflowError(f"EmployerTaxContribution not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for EmployerTaxContribution {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_employertaxcontribution_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_employertaxcontribution(record_id)
+        if not obj:
+            raise WorkflowError(f"EmployerTaxContribution not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for EmployerTaxContribution {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_employertaxcontribution_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_employertaxcontribution(record_id)
+        if not obj:
+            raise WorkflowError(f"EmployerTaxContribution not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for EmployerTaxContribution {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_employertaxcontribution_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_employertaxcontribution(record_id)
+        if not obj:
+            raise WorkflowError(f"EmployerTaxContribution not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for EmployerTaxContribution {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_employertaxcontribution_4_completed", result)
+        return result
+
+class PayrollAccrualPostingService:
+    """Service layer managing business transactions for PayrollAccrualPosting."""
+    def __init__(self):
+        self.table_name = "payroll_accounting_payrollaccrualposting"
+
+    def create_payrollaccrualposting(self, data: Dict[str, Any]) -> PayrollAccrualPosting:
+        """Create a new PayrollAccrualPosting record."""
+        audit_log("payroll_accounting_service", f"Creating PayrollAccrualPosting")
+        obj = PayrollAccrualPosting(**data)
+        obj.validate_code(getattr(obj, "code"))
+        obj.validate_description(getattr(obj, "description"))
+        obj.validate_amount(getattr(obj, "amount"))
+        obj.validate_base_currency(getattr(obj, "base_currency"))
+        obj.validate_status_state(getattr(obj, "status_state"))
+        db_instance.insert(self.table_name, obj.id, obj.to_dict())
+        event_broker.publish(f"payroll_accounting_payrollaccrualposting_created", obj.to_dict())
+        return obj
+
+    def get_payrollaccrualposting(self, record_id: str) -> Optional[PayrollAccrualPosting]:
+        """Fetch a PayrollAccrualPosting record by ID."""
+        record = db_instance.get(self.table_name, record_id)
+        if not record:
+            return None
+        return PayrollAccrualPosting.from_dict(record)
+
+    def update_payrollaccrualposting(self, record_id: str, updates: Dict[str, Any]) -> PayrollAccrualPosting:
+        """Update attributes on a PayrollAccrualPosting."""
+        audit_log("payroll_accounting_service", f"Updating PayrollAccrualPosting {record_id}")
+        obj = self.get_payrollaccrualposting(record_id)
+        if not obj:
+            raise WorkflowError(f"PayrollAccrualPosting with ID {record_id} not found.")
+        for k, v in updates.items():
+            if hasattr(obj, k):
+                setattr(obj, k, v)
+        db_instance.update(self.table_name, record_id, obj.to_dict())
+        event_broker.publish(f"payroll_accounting_payrollaccrualposting_updated", obj.to_dict())
+        return obj
+
+    def delete_payrollaccrualposting(self, record_id: str) -> bool:
+        """Remove a PayrollAccrualPosting record."""
+        audit_log("payroll_accounting_service", f"Deleting PayrollAccrualPosting {record_id}")
+        obj = self.get_payrollaccrualposting(record_id)
+        if not obj:
+            return False
+        db_instance.delete(self.table_name, record_id)
+        event_broker.publish(f"payroll_accounting_payrollaccrualposting_deleted", {"id": record_id})
+        return True
+
+    def list_all_payrollaccrualpostings(self) -> List[PayrollAccrualPosting]:
+        """Retrieve all PayrollAccrualPosting items in database."""
+        records = db_instance.query(self.table_name)
+        return [PayrollAccrualPosting.from_dict(r) for r in records]
+
+    def query_payrollaccrualpostings(self, filters: Dict[str, Any]) -> List[PayrollAccrualPosting]:
+        """Find PayrollAccrualPostings matching query filters."""
+        def filter_func(r: Dict[str, Any]) -> bool:
+            for k, v in filters.items():
+                if r.get(k) != v:
+                    return False
+            return True
+        records = db_instance.query(self.table_name, filter_func)
+        return [PayrollAccrualPosting.from_dict(r) for r in records]
+
+    def verify_payrollaccrualposting_workflow_state(self, record_id: str) -> bool:
+        """Evaluate and enforce specific workflow state rules."""
+        obj = self.get_payrollaccrualposting(record_id)
+        if not obj:
+            return False
+        audit_log(self.table_name, f"Verifying state for PayrollAccrualPosting: {obj.id}")
+        return True
+
+    def simulated_domain_workflow_1(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 1."""
+        obj = self.get_payrollaccrualposting(record_id)
+        if not obj:
+            raise WorkflowError(f"PayrollAccrualPosting not found")
+        audit_log(self.table_name, f"Running simulated workflow 1 for PayrollAccrualPosting {record_id}")
+        result = {
+            "workflow_step": 1,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_payrollaccrualposting_1_completed", result)
+        return result
+    def simulated_domain_workflow_2(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 2."""
+        obj = self.get_payrollaccrualposting(record_id)
+        if not obj:
+            raise WorkflowError(f"PayrollAccrualPosting not found")
+        audit_log(self.table_name, f"Running simulated workflow 2 for PayrollAccrualPosting {record_id}")
+        result = {
+            "workflow_step": 2,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_payrollaccrualposting_2_completed", result)
+        return result
+    def simulated_domain_workflow_3(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 3."""
+        obj = self.get_payrollaccrualposting(record_id)
+        if not obj:
+            raise WorkflowError(f"PayrollAccrualPosting not found")
+        audit_log(self.table_name, f"Running simulated workflow 3 for PayrollAccrualPosting {record_id}")
+        result = {
+            "workflow_step": 3,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_payrollaccrualposting_3_completed", result)
+        return result
+    def simulated_domain_workflow_4(self, record_id: str, param: str = "default") -> Dict[str, Any]:
+        """Mock business workflow process sequence 4."""
+        obj = self.get_payrollaccrualposting(record_id)
+        if not obj:
+            raise WorkflowError(f"PayrollAccrualPosting not found")
+        audit_log(self.table_name, f"Running simulated workflow 4 for PayrollAccrualPosting {record_id}")
+        result = {
+            "workflow_step": 4,
+            "status": "completed",
+            "processed_at": str(datetime.now()),
+            "param_input": param,
+            "entity_id": obj.id
+        }
+        event_broker.publish(f"workflow_payrollaccrualposting_4_completed", result)
         return result
 

@@ -783,3 +783,161 @@ def helper_func_payrollbenefitplan_variant_6(data: Dict[str, Any]) -> Dict[str, 
     processed["processed_at"] = str(datetime.now())
     return processed
 
+def export_employertaxcontributions_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export EmployerTaxContribution records into a formatted CSV string."""
+    audit_log("payroll_accounting_utils", f"Exporting EmployerTaxContributions to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_employertaxcontributions_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import EmployerTaxContribution records from a CSV string representation."""
+    audit_log("payroll_accounting_utils", f"Importing EmployerTaxContributions from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_employertaxcontribution_report(item: Dict[str, Any]) -> str:
+    """Format EmployerTaxContribution into a human-readable display string."""
+    lines = [f"=== EmployerTaxContribution Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_employertaxcontribution_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for EmployerTaxContribution."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_employertaxcontribution_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for EmployerTaxContribution."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_employertaxcontribution_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for EmployerTaxContribution."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_employertaxcontribution_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for EmployerTaxContribution."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_employertaxcontribution_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for EmployerTaxContribution."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_employertaxcontribution_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for EmployerTaxContribution."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def export_payrollaccrualpostings_to_csv(items: List[Dict[str, Any]]) -> str:
+    """Export PayrollAccrualPosting records into a formatted CSV string."""
+    audit_log("payroll_accounting_utils", f"Exporting PayrollAccrualPostings to CSV")
+    if not items:
+        return ""
+    output = io.StringIO()
+    headers = list(items[0].keys())
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for item in items:
+        writer.writerow(item)
+    return output.getvalue()
+
+def import_payrollaccrualpostings_from_csv(csv_data: str) -> List[Dict[str, Any]]:
+    """Import PayrollAccrualPosting records from a CSV string representation."""
+    audit_log("payroll_accounting_utils", f"Importing PayrollAccrualPostings from CSV")
+    input_stream = io.StringIO(csv_data.strip())
+    reader = csv.DictReader(input_stream)
+    results = []
+    for row in reader:
+        item = dict(row)
+        if "amount" in item:
+            item["amount"] = float(item["amount"])
+        results.append(item)
+    return results
+
+def format_payrollaccrualposting_report(item: Dict[str, Any]) -> str:
+    """Format PayrollAccrualPosting into a human-readable display string."""
+    lines = [f"=== PayrollAccrualPosting Report (ID: {item.get('id')}) ==="]
+    lines.append(f"Code: {item.get('code')}")
+    lines.append(f"Description: {item.get('description')}")
+    lines.append(f"Amount: {item.get('amount')}")
+    lines.append(f"Base Currency: {item.get('base_currency')}")
+    lines.append(f"Status State: {item.get('status_state')}")
+    lines.append("===================================")
+    return "\n".join(lines)
+
+def helper_func_payrollaccrualposting_variant_1(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 1 for PayrollAccrualPosting."""
+    processed = data.copy()
+    processed["processed_variant"] = 1
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_payrollaccrualposting_variant_2(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 2 for PayrollAccrualPosting."""
+    processed = data.copy()
+    processed["processed_variant"] = 2
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_payrollaccrualposting_variant_3(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 3 for PayrollAccrualPosting."""
+    processed = data.copy()
+    processed["processed_variant"] = 3
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_payrollaccrualposting_variant_4(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 4 for PayrollAccrualPosting."""
+    processed = data.copy()
+    processed["processed_variant"] = 4
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_payrollaccrualposting_variant_5(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 5 for PayrollAccrualPosting."""
+    processed = data.copy()
+    processed["processed_variant"] = 5
+    processed["processed_at"] = str(datetime.now())
+    return processed
+
+def helper_func_payrollaccrualposting_variant_6(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Auxiliary processing variation 6 for PayrollAccrualPosting."""
+    processed = data.copy()
+    processed["processed_variant"] = 6
+    processed["processed_at"] = str(datetime.now())
+    return processed
+

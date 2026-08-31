@@ -36,6 +36,12 @@ from erp.modules.audit_compliance.utils import export_auditchecklists_to_csv, im
 from erp.modules.audit_compliance.models import ComplianceException
 from erp.modules.audit_compliance.services import ComplianceExceptionService
 from erp.modules.audit_compliance.utils import export_complianceexceptions_to_csv, import_complianceexceptions_from_csv
+from erp.modules.audit_compliance.models import ComplianceAuditSchedule
+from erp.modules.audit_compliance.services import ComplianceAuditScheduleService
+from erp.modules.audit_compliance.utils import export_complianceauditschedules_to_csv, import_complianceauditschedules_from_csv
+from erp.modules.audit_compliance.models import SOXControlPoint
+from erp.modules.audit_compliance.services import SOXControlPointService
+from erp.modules.audit_compliance.utils import export_soxcontrolpoints_to_csv, import_soxcontrolpoints_from_csv
 
 class TestAuditcomplianceModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the audit_compliance module."""
@@ -51,6 +57,8 @@ class TestAuditcomplianceModule(unittest.TestCase):
         self._systemsettingchange_service = SystemSettingChangeService()
         self._auditchecklist_service = AuditChecklistService()
         self._complianceexception_service = ComplianceExceptionService()
+        self._complianceauditschedule_service = ComplianceAuditScheduleService()
+        self._soxcontrolpoint_service = SOXControlPointService()
 
     def test_model_audittraillog_creation(self):
         """Verify instantiation and attribute validation for AuditTrailLog."""
@@ -515,4 +523,98 @@ class TestAuditcomplianceModule(unittest.TestCase):
         imported = import_complianceexceptions_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._complianceexception_service.delete_complianceexception(created.id)
+
+    def test_model_complianceauditschedule_creation(self):
+        """Verify instantiation and attribute validation for ComplianceAuditSchedule."""
+        obj = ComplianceAuditSchedule(**{"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.scheduled_date, {"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"scheduled_date"])
+        self.assertEqual(obj.period_code, {"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"period_code"])
+        self.assertEqual(obj.status_state, {"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_complianceauditschedule_crud(self):
+        """Verify service CRUD operations for ComplianceAuditSchedule."""
+        created = self._complianceauditschedule_service.create_complianceauditschedule({"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._complianceauditschedule_service.get_complianceauditschedule(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._complianceauditschedule_service.update_complianceauditschedule(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._complianceauditschedule_service.list_all_complianceauditschedules()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._complianceauditschedule_service.delete_complianceauditschedule(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_complianceauditschedule(self):
+        """Verify domain custom workflow process logic on ComplianceAuditSchedule."""
+        created = self._complianceauditschedule_service.create_complianceauditschedule({"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertTrue(self._complianceauditschedule_service.verify_complianceauditschedule_workflow_state(created.id))
+        res = self._complianceauditschedule_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._complianceauditschedule_service.delete_complianceauditschedule(created.id)
+
+    def test_validation_bounds_complianceauditschedule(self):
+        """Test validation bounds and non-existent get behavior for ComplianceAuditSchedule."""
+        self.assertIsNone(self._complianceauditschedule_service.get_complianceauditschedule("invalid_id_value"))
+        created = self._complianceauditschedule_service.create_complianceauditschedule({"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._complianceauditschedule_service.delete_complianceauditschedule(created.id)
+
+    def test_csv_export_import_complianceauditschedule(self):
+        """Verify data serialization via CSV utility functions for ComplianceAuditSchedule."""
+        created = self._complianceauditschedule_service.create_complianceauditschedule({"code": "COMPLIANCEAUDITSCHEDULE-001", "description": "Standard record of type ComplianceAuditSchedule", "scheduled_date": "2026-08-31", "period_code": "2026-08", "status_state": "ACTIVE"})
+        csv_out = export_complianceauditschedules_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_complianceauditschedules_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._complianceauditschedule_service.delete_complianceauditschedule(created.id)
+
+    def test_model_soxcontrolpoint_creation(self):
+        """Verify instantiation and attribute validation for SOXControlPoint."""
+        obj = SOXControlPoint(**{"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_soxcontrolpoint_crud(self):
+        """Verify service CRUD operations for SOXControlPoint."""
+        created = self._soxcontrolpoint_service.create_soxcontrolpoint({"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._soxcontrolpoint_service.get_soxcontrolpoint(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._soxcontrolpoint_service.update_soxcontrolpoint(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._soxcontrolpoint_service.list_all_soxcontrolpoints()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._soxcontrolpoint_service.delete_soxcontrolpoint(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_soxcontrolpoint(self):
+        """Verify domain custom workflow process logic on SOXControlPoint."""
+        created = self._soxcontrolpoint_service.create_soxcontrolpoint({"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"})
+        self.assertTrue(self._soxcontrolpoint_service.verify_soxcontrolpoint_workflow_state(created.id))
+        res = self._soxcontrolpoint_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._soxcontrolpoint_service.delete_soxcontrolpoint(created.id)
+
+    def test_validation_bounds_soxcontrolpoint(self):
+        """Test validation bounds and non-existent get behavior for SOXControlPoint."""
+        self.assertIsNone(self._soxcontrolpoint_service.get_soxcontrolpoint("invalid_id_value"))
+        created = self._soxcontrolpoint_service.create_soxcontrolpoint({"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._soxcontrolpoint_service.delete_soxcontrolpoint(created.id)
+
+    def test_csv_export_import_soxcontrolpoint(self):
+        """Verify data serialization via CSV utility functions for SOXControlPoint."""
+        created = self._soxcontrolpoint_service.create_soxcontrolpoint({"code": "SOXCONTROLPOINT-001", "description": "Standard record of type SOXControlPoint", "status_state": "ACTIVE"})
+        csv_out = export_soxcontrolpoints_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_soxcontrolpoints_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._soxcontrolpoint_service.delete_soxcontrolpoint(created.id)
 

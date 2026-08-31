@@ -36,6 +36,12 @@ from erp.modules.fixed_assets.utils import export_assetinsuranceclaims_to_csv, i
 from erp.modules.fixed_assets.models import AssetLocation
 from erp.modules.fixed_assets.services import AssetLocationService
 from erp.modules.fixed_assets.utils import export_assetlocations_to_csv, import_assetlocations_from_csv
+from erp.modules.fixed_assets.models import LeasedAssetRecord
+from erp.modules.fixed_assets.services import LeasedAssetRecordService
+from erp.modules.fixed_assets.utils import export_leasedassetrecords_to_csv, import_leasedassetrecords_from_csv
+from erp.modules.fixed_assets.models import DepreciationMethodRule
+from erp.modules.fixed_assets.services import DepreciationMethodRuleService
+from erp.modules.fixed_assets.utils import export_depreciationmethodrules_to_csv, import_depreciationmethodrules_from_csv
 
 class TestFixedassetsModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the fixed_assets module."""
@@ -51,6 +57,8 @@ class TestFixedassetsModule(unittest.TestCase):
         self._insurancepolicy_service = InsurancePolicyService()
         self._assetinsuranceclaim_service = AssetInsuranceClaimService()
         self._assetlocation_service = AssetLocationService()
+        self._leasedassetrecord_service = LeasedAssetRecordService()
+        self._depreciationmethodrule_service = DepreciationMethodRuleService()
 
     def test_model_asset_creation(self):
         """Verify instantiation and attribute validation for Asset."""
@@ -516,5 +524,95 @@ class TestFixedassetsModule(unittest.TestCase):
         self.assertEqual(len(imported), 1)
         self._assetlocation_service.delete_assetlocation(created.id)
 
+    def test_model_leasedassetrecord_creation(self):
+        """Verify instantiation and attribute validation for LeasedAssetRecord."""
+        obj = LeasedAssetRecord(**{"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"}[f"status_state"])
 
-    # Asset commit 10: Verification check for claims status validation
+    def test_service_leasedassetrecord_crud(self):
+        """Verify service CRUD operations for LeasedAssetRecord."""
+        created = self._leasedassetrecord_service.create_leasedassetrecord({"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._leasedassetrecord_service.get_leasedassetrecord(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._leasedassetrecord_service.update_leasedassetrecord(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._leasedassetrecord_service.list_all_leasedassetrecords()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._leasedassetrecord_service.delete_leasedassetrecord(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_leasedassetrecord(self):
+        """Verify domain custom workflow process logic on LeasedAssetRecord."""
+        created = self._leasedassetrecord_service.create_leasedassetrecord({"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"})
+        self.assertTrue(self._leasedassetrecord_service.verify_leasedassetrecord_workflow_state(created.id))
+        res = self._leasedassetrecord_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._leasedassetrecord_service.delete_leasedassetrecord(created.id)
+
+    def test_validation_bounds_leasedassetrecord(self):
+        """Test validation bounds and non-existent get behavior for LeasedAssetRecord."""
+        self.assertIsNone(self._leasedassetrecord_service.get_leasedassetrecord("invalid_id_value"))
+        created = self._leasedassetrecord_service.create_leasedassetrecord({"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._leasedassetrecord_service.delete_leasedassetrecord(created.id)
+
+    def test_csv_export_import_leasedassetrecord(self):
+        """Verify data serialization via CSV utility functions for LeasedAssetRecord."""
+        created = self._leasedassetrecord_service.create_leasedassetrecord({"code": "LEASEDASSETRECORD-001", "description": "Standard record of type LeasedAssetRecord", "status_state": "ACTIVE"})
+        csv_out = export_leasedassetrecords_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_leasedassetrecords_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._leasedassetrecord_service.delete_leasedassetrecord(created.id)
+
+    def test_model_depreciationmethodrule_creation(self):
+        """Verify instantiation and attribute validation for DepreciationMethodRule."""
+        obj = DepreciationMethodRule(**{"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_depreciationmethodrule_crud(self):
+        """Verify service CRUD operations for DepreciationMethodRule."""
+        created = self._depreciationmethodrule_service.create_depreciationmethodrule({"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._depreciationmethodrule_service.get_depreciationmethodrule(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._depreciationmethodrule_service.update_depreciationmethodrule(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._depreciationmethodrule_service.list_all_depreciationmethodrules()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._depreciationmethodrule_service.delete_depreciationmethodrule(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_depreciationmethodrule(self):
+        """Verify domain custom workflow process logic on DepreciationMethodRule."""
+        created = self._depreciationmethodrule_service.create_depreciationmethodrule({"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"})
+        self.assertTrue(self._depreciationmethodrule_service.verify_depreciationmethodrule_workflow_state(created.id))
+        res = self._depreciationmethodrule_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._depreciationmethodrule_service.delete_depreciationmethodrule(created.id)
+
+    def test_validation_bounds_depreciationmethodrule(self):
+        """Test validation bounds and non-existent get behavior for DepreciationMethodRule."""
+        self.assertIsNone(self._depreciationmethodrule_service.get_depreciationmethodrule("invalid_id_value"))
+        created = self._depreciationmethodrule_service.create_depreciationmethodrule({"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._depreciationmethodrule_service.delete_depreciationmethodrule(created.id)
+
+    def test_csv_export_import_depreciationmethodrule(self):
+        """Verify data serialization via CSV utility functions for DepreciationMethodRule."""
+        created = self._depreciationmethodrule_service.create_depreciationmethodrule({"code": "DEPRECIATIONMETHODRULE-001", "description": "Standard record of type DepreciationMethodRule", "status_state": "ACTIVE"})
+        csv_out = export_depreciationmethodrules_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_depreciationmethodrules_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._depreciationmethodrule_service.delete_depreciationmethodrule(created.id)
+

@@ -17,6 +17,8 @@ from erp.modules.payroll_accounting.services import TimesheetPostingService
 from erp.modules.payroll_accounting.services import PayrollAdjustmentService
 from erp.modules.payroll_accounting.services import SalaryGradeService
 from erp.modules.payroll_accounting.services import PayrollBenefitPlanService
+from erp.modules.payroll_accounting.services import EmployerTaxContributionService
+from erp.modules.payroll_accounting.services import PayrollAccrualPostingService
 
 class Payroll_accountingApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Payroll_accountingApiController:
         self._payrolladjustment_service = PayrollAdjustmentService()
         self._salarygrade_service = SalaryGradeService()
         self._payrollbenefitplan_service = PayrollBenefitPlanService()
+        self._employertaxcontribution_service = EmployerTaxContributionService()
+        self._payrollaccrualposting_service = PayrollAccrualPostingService()
 
     def create_payrolljournal_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/payroll_accounting/payrolljournals"""
@@ -702,6 +706,144 @@ class Payroll_accountingApiController:
             auth_service.authorize(token, ["ledger", "payroll_accounting_user"])
             is_valid = self._payrollbenefitplan_service.verify_payrollbenefitplan_workflow_state(record_id)
             res = self._payrollbenefitplan_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_employertaxcontribution_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/payroll_accounting/employertaxcontributions"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "payroll_accounting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._employertaxcontribution_service.create_employertaxcontribution(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_employertaxcontribution_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/payroll_accounting/employertaxcontributions/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "payroll_accounting_user"])
+            obj = self._employertaxcontribution_service.get_employertaxcontribution(record_id)
+            if not obj:
+                return {"status": "error", "message": "EmployerTaxContribution not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_employertaxcontribution_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/payroll_accounting/employertaxcontributions/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "payroll_accounting_manager"])
+            obj = self._employertaxcontribution_service.update_employertaxcontribution(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_employertaxcontribution_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/payroll_accounting/employertaxcontributions/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._employertaxcontribution_service.delete_employertaxcontribution(record_id)
+            if not success:
+                return {"status": "error", "message": "EmployerTaxContribution not found", "code": 404}
+            return {"status": "success", "message": "EmployerTaxContribution deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_employertaxcontributions_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/payroll_accounting/employertaxcontributions"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "payroll_accounting_user"])
+            items = self._employertaxcontribution_service.list_all_employertaxcontributions()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_employertaxcontribution_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/payroll_accounting/employertaxcontributions/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "payroll_accounting_user"])
+            is_valid = self._employertaxcontribution_service.verify_employertaxcontribution_workflow_state(record_id)
+            res = self._employertaxcontribution_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_payrollaccrualposting_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/payroll_accounting/payrollaccrualpostings"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "payroll_accounting_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "amount" not in payload:
+                return {"status": "error", "message": "Missing required parameter: amount", "code": 400}
+            if "base_currency" not in payload:
+                return {"status": "error", "message": "Missing required parameter: base_currency", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._payrollaccrualposting_service.create_payrollaccrualposting(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_payrollaccrualposting_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/payroll_accounting/payrollaccrualpostings/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "payroll_accounting_user"])
+            obj = self._payrollaccrualposting_service.get_payrollaccrualposting(record_id)
+            if not obj:
+                return {"status": "error", "message": "PayrollAccrualPosting not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_payrollaccrualposting_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/payroll_accounting/payrollaccrualpostings/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "payroll_accounting_manager"])
+            obj = self._payrollaccrualposting_service.update_payrollaccrualposting(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_payrollaccrualposting_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/payroll_accounting/payrollaccrualpostings/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._payrollaccrualposting_service.delete_payrollaccrualposting(record_id)
+            if not success:
+                return {"status": "error", "message": "PayrollAccrualPosting not found", "code": 404}
+            return {"status": "success", "message": "PayrollAccrualPosting deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_payrollaccrualpostings_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/payroll_accounting/payrollaccrualpostings"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "payroll_accounting_user"])
+            items = self._payrollaccrualposting_service.list_all_payrollaccrualpostings()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_payrollaccrualposting_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/payroll_accounting/payrollaccrualpostings/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "payroll_accounting_user"])
+            is_valid = self._payrollaccrualposting_service.verify_payrollaccrualposting_workflow_state(record_id)
+            res = self._payrollaccrualposting_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

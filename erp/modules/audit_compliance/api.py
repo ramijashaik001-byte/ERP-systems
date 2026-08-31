@@ -17,6 +17,8 @@ from erp.modules.audit_compliance.services import ApprovalStepService
 from erp.modules.audit_compliance.services import SystemSettingChangeService
 from erp.modules.audit_compliance.services import AuditChecklistService
 from erp.modules.audit_compliance.services import ComplianceExceptionService
+from erp.modules.audit_compliance.services import ComplianceAuditScheduleService
+from erp.modules.audit_compliance.services import SOXControlPointService
 
 class Audit_complianceApiController:
     """REST API Controller for handling module routes and requests."""
@@ -31,6 +33,8 @@ class Audit_complianceApiController:
         self._systemsettingchange_service = SystemSettingChangeService()
         self._auditchecklist_service = AuditChecklistService()
         self._complianceexception_service = ComplianceExceptionService()
+        self._complianceauditschedule_service = ComplianceAuditScheduleService()
+        self._soxcontrolpoint_service = SOXControlPointService()
 
     def create_audittraillog_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """REST Endpoint: POST /api/v1/audit_compliance/audittraillogs"""
@@ -686,6 +690,140 @@ class Audit_complianceApiController:
             auth_service.authorize(token, ["ledger", "audit_compliance_user"])
             is_valid = self._complianceexception_service.verify_complianceexception_workflow_state(record_id)
             res = self._complianceexception_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_complianceauditschedule_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/audit_compliance/complianceauditschedules"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "audit_compliance_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "scheduled_date" not in payload:
+                return {"status": "error", "message": "Missing required parameter: scheduled_date", "code": 400}
+            if "period_code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: period_code", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._complianceauditschedule_service.create_complianceauditschedule(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_complianceauditschedule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/audit_compliance/complianceauditschedules/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "audit_compliance_user"])
+            obj = self._complianceauditschedule_service.get_complianceauditschedule(record_id)
+            if not obj:
+                return {"status": "error", "message": "ComplianceAuditSchedule not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_complianceauditschedule_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/audit_compliance/complianceauditschedules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "audit_compliance_manager"])
+            obj = self._complianceauditschedule_service.update_complianceauditschedule(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_complianceauditschedule_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/audit_compliance/complianceauditschedules/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._complianceauditschedule_service.delete_complianceauditschedule(record_id)
+            if not success:
+                return {"status": "error", "message": "ComplianceAuditSchedule not found", "code": 404}
+            return {"status": "success", "message": "ComplianceAuditSchedule deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_complianceauditschedules_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/audit_compliance/complianceauditschedules"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "audit_compliance_user"])
+            items = self._complianceauditschedule_service.list_all_complianceauditschedules()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_complianceauditschedule_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/audit_compliance/complianceauditschedules/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "audit_compliance_user"])
+            is_valid = self._complianceauditschedule_service.verify_complianceauditschedule_workflow_state(record_id)
+            res = self._complianceauditschedule_service.simulated_domain_workflow_1(record_id, "api_trigger")
+            return {"status": "success", "data": res, "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def create_soxcontrolpoint_endpoint(self, token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/audit_compliance/soxcontrolpoints"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "audit_compliance_manager"])
+            if "code" not in payload:
+                return {"status": "error", "message": "Missing required parameter: code", "code": 400}
+            if "description" not in payload:
+                return {"status": "error", "message": "Missing required parameter: description", "code": 400}
+            if "status_state" not in payload:
+                return {"status": "error", "message": "Missing required parameter: status_state", "code": 400}
+            obj = self._soxcontrolpoint_service.create_soxcontrolpoint(payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 201}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def get_soxcontrolpoint_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/audit_compliance/soxcontrolpoints/{id}"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "audit_compliance_user"])
+            obj = self._soxcontrolpoint_service.get_soxcontrolpoint(record_id)
+            if not obj:
+                return {"status": "error", "message": "SOXControlPoint not found", "code": 404}
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def update_soxcontrolpoint_endpoint(self, token: str, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """REST Endpoint: PUT /api/v1/audit_compliance/soxcontrolpoints/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller", "audit_compliance_manager"])
+            obj = self._soxcontrolpoint_service.update_soxcontrolpoint(record_id, payload)
+            return {"status": "success", "data": obj.to_dict(), "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def delete_soxcontrolpoint_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: DELETE /api/v1/audit_compliance/soxcontrolpoints/{id}"""
+        try:
+            auth_service.authorize(token, ["admin", "controller"])
+            success = self._soxcontrolpoint_service.delete_soxcontrolpoint(record_id)
+            if not success:
+                return {"status": "error", "message": "SOXControlPoint not found", "code": 404}
+            return {"status": "success", "message": "SOXControlPoint deleted successfully", "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def list_soxcontrolpoints_endpoint(self, token: str) -> Dict[str, Any]:
+        """REST Endpoint: GET /api/v1/audit_compliance/soxcontrolpoints"""
+        try:
+            auth_service.authorize(token, ["ledger", "auditor", "audit_compliance_user"])
+            items = self._soxcontrolpoint_service.list_all_soxcontrolpoints()
+            return {"status": "success", "data": [i.to_dict() for i in items], "code": 200}
+        except ERPException as e:
+            return {"status": "error", "message": str(e), "code": 400}
+
+    def run_soxcontrolpoint_workflow_endpoint(self, token: str, record_id: str) -> Dict[str, Any]:
+        """REST Endpoint: POST /api/v1/audit_compliance/soxcontrolpoints/{id}/workflow"""
+        try:
+            auth_service.authorize(token, ["ledger", "audit_compliance_user"])
+            is_valid = self._soxcontrolpoint_service.verify_soxcontrolpoint_workflow_state(record_id)
+            res = self._soxcontrolpoint_service.simulated_domain_workflow_1(record_id, "api_trigger")
             return {"status": "success", "data": res, "code": 200}
         except ERPException as e:
             return {"status": "error", "message": str(e), "code": 400}

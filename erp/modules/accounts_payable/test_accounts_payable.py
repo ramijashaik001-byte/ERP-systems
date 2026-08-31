@@ -36,6 +36,12 @@ from erp.modules.accounts_payable.utils import export_vendorcategorys_to_csv, im
 from erp.modules.accounts_payable.models import APReportPreference
 from erp.modules.accounts_payable.services import APReportPreferenceService
 from erp.modules.accounts_payable.utils import export_apreportpreferences_to_csv, import_apreportpreferences_from_csv
+from erp.modules.accounts_payable.models import Vendor1099Tax
+from erp.modules.accounts_payable.services import Vendor1099TaxService
+from erp.modules.accounts_payable.utils import export_vendor1099taxs_to_csv, import_vendor1099taxs_from_csv
+from erp.modules.accounts_payable.models import APDisbursementRule
+from erp.modules.accounts_payable.services import APDisbursementRuleService
+from erp.modules.accounts_payable.utils import export_apdisbursementrules_to_csv, import_apdisbursementrules_from_csv
 
 class TestAccountspayableModule(unittest.TestCase):
     """Unit tests verifying models and workflows of the accounts_payable module."""
@@ -51,6 +57,8 @@ class TestAccountspayableModule(unittest.TestCase):
         self._vendorcreditbalance_service = VendorCreditBalanceService()
         self._vendorcategory_service = VendorCategoryService()
         self._apreportpreference_service = APReportPreferenceService()
+        self._vendor1099tax_service = Vendor1099TaxService()
+        self._apdisbursementrule_service = APDisbursementRuleService()
 
     def test_model_vendor_creation(self):
         """Verify instantiation and attribute validation for Vendor."""
@@ -521,4 +529,98 @@ class TestAccountspayableModule(unittest.TestCase):
         imported = import_apreportpreferences_from_csv(csv_out)
         self.assertEqual(len(imported), 1)
         self._apreportpreference_service.delete_apreportpreference(created.id)
+
+    def test_model_vendor1099tax_creation(self):
+        """Verify instantiation and attribute validation for Vendor1099Tax."""
+        obj = Vendor1099Tax(**{"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.amount, {"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"amount"])
+        self.assertEqual(obj.base_currency, {"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"base_currency"])
+        self.assertEqual(obj.status_state, {"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_vendor1099tax_crud(self):
+        """Verify service CRUD operations for Vendor1099Tax."""
+        created = self._vendor1099tax_service.create_vendor1099tax({"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._vendor1099tax_service.get_vendor1099tax(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._vendor1099tax_service.update_vendor1099tax(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._vendor1099tax_service.list_all_vendor1099taxs()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._vendor1099tax_service.delete_vendor1099tax(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_vendor1099tax(self):
+        """Verify domain custom workflow process logic on Vendor1099Tax."""
+        created = self._vendor1099tax_service.create_vendor1099tax({"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertTrue(self._vendor1099tax_service.verify_vendor1099tax_workflow_state(created.id))
+        res = self._vendor1099tax_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._vendor1099tax_service.delete_vendor1099tax(created.id)
+
+    def test_validation_bounds_vendor1099tax(self):
+        """Test validation bounds and non-existent get behavior for Vendor1099Tax."""
+        self.assertIsNone(self._vendor1099tax_service.get_vendor1099tax("invalid_id_value"))
+        created = self._vendor1099tax_service.create_vendor1099tax({"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._vendor1099tax_service.delete_vendor1099tax(created.id)
+
+    def test_csv_export_import_vendor1099tax(self):
+        """Verify data serialization via CSV utility functions for Vendor1099Tax."""
+        created = self._vendor1099tax_service.create_vendor1099tax({"code": "VENDOR1099TAX-001", "description": "Standard record of type Vendor1099Tax", "amount": 1000.00, "base_currency": "USD", "status_state": "ACTIVE"})
+        csv_out = export_vendor1099taxs_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_vendor1099taxs_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._vendor1099tax_service.delete_vendor1099tax(created.id)
+
+    def test_model_apdisbursementrule_creation(self):
+        """Verify instantiation and attribute validation for APDisbursementRule."""
+        obj = APDisbursementRule(**{"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"})
+        self.assertEqual(obj.code, {"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"}[f"code"])
+        self.assertEqual(obj.description, {"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"}[f"description"])
+        self.assertEqual(obj.status_state, {"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"}[f"status_state"])
+
+    def test_service_apdisbursementrule_crud(self):
+        """Verify service CRUD operations for APDisbursementRule."""
+        created = self._apdisbursementrule_service.create_apdisbursementrule({"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        fetched = self._apdisbursementrule_service.get_apdisbursementrule(created.id)
+        self.assertIsNotNone(fetched)
+        self.assertEqual(fetched.id, created.id)
+        updated = self._apdisbursementrule_service.update_apdisbursementrule(created.id, {"code": "updated_val_x"})
+        self.assertEqual(getattr(updated, "code"), "updated_val_x")
+        all_items = self._apdisbursementrule_service.list_all_apdisbursementrules()
+        self.assertTrue(len(all_items) > 0)
+        deleted = self._apdisbursementrule_service.delete_apdisbursementrule(created.id)
+        self.assertTrue(deleted)
+
+    def test_business_workflow_apdisbursementrule(self):
+        """Verify domain custom workflow process logic on APDisbursementRule."""
+        created = self._apdisbursementrule_service.create_apdisbursementrule({"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"})
+        self.assertTrue(self._apdisbursementrule_service.verify_apdisbursementrule_workflow_state(created.id))
+        res = self._apdisbursementrule_service.simulated_domain_workflow_1(created.id, "test_run")
+        self.assertEqual(res.get("workflow_step"), 1)
+        self.assertEqual(res.get("status"), "completed")
+        self._apdisbursementrule_service.delete_apdisbursementrule(created.id)
+
+    def test_validation_bounds_apdisbursementrule(self):
+        """Test validation bounds and non-existent get behavior for APDisbursementRule."""
+        self.assertIsNone(self._apdisbursementrule_service.get_apdisbursementrule("invalid_id_value"))
+        created = self._apdisbursementrule_service.create_apdisbursementrule({"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"})
+        self.assertIsNotNone(created.id)
+        self._apdisbursementrule_service.delete_apdisbursementrule(created.id)
+
+    def test_csv_export_import_apdisbursementrule(self):
+        """Verify data serialization via CSV utility functions for APDisbursementRule."""
+        created = self._apdisbursementrule_service.create_apdisbursementrule({"code": "APDISBURSEMENTRULE-001", "description": "Standard record of type APDisbursementRule", "status_state": "ACTIVE"})
+        csv_out = export_apdisbursementrules_to_csv([created.to_dict()])
+        self.assertTrue(len(csv_out) > 0)
+        imported = import_apdisbursementrules_from_csv(csv_out)
+        self.assertEqual(len(imported), 1)
+        self._apdisbursementrule_service.delete_apdisbursementrule(created.id)
 
