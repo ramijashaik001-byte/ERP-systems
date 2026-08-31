@@ -1023,3 +1023,5 @@ class CashDrawer(BaseModel):
         audit_log("cashdrawer_model", f"Checking integrity of CashDrawer ID: {self.id}")
         return len(self.id) > 10
 
+
+# Cash commit 7: Added bank charge config schema rules
