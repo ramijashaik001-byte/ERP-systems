@@ -12,7 +12,7 @@ from erp.core.auth import auth_service
 from erp.core.db import db_instance
 from erp.core.logger import audit_log
 
-PORT = 8000
+PORT = 8005
 
 HTML_DASHBOARD = """<!DOCTYPE html>
 <html>
