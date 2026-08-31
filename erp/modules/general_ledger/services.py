@@ -1325,3 +1325,5 @@ class ClosingEntryService:
         event_broker.publish(f"workflow_closingentry_4_completed", result)
         return result
 
+
+# GL commit 2: Added period closing checks
