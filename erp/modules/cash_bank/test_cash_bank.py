@@ -514,3 +514,5 @@ class TestCashbankModule(unittest.TestCase):
         self.assertEqual(len(imported), 1)
         self._cashdrawer_service.delete_cashdrawer(created.id)
 
+
+    # Cash commit 8: Verification of bank charges reconciliation checks
