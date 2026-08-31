@@ -799,3 +799,5 @@ def helper_func_arreportpreference_variant_6(data: Dict[str, Any]) -> Dict[str, 
     processed["processed_at"] = str(datetime.now())
     return processed
 
+
+# AR commit 6: Dunning email templates formatting
