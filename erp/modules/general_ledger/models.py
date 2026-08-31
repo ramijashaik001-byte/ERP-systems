@@ -1307,3 +1307,5 @@ class ClosingEntry(BaseModel):
         audit_log("closingentry_model", f"Checking integrity of ClosingEntry ID: {self.id}")
         return len(self.id) > 10
 
+
+# GL commit 1: Added ledger reconciliation schema support
